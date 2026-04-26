@@ -1,0 +1,42 @@
+/* Slider con imágenes verticales */
+.image-slider {
+    position: absolute;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: 100%;
+}
+
+.image-slider-inner {
+    display: flex;
+    flex-direction: column;
+    height: 400%; /* 4 imágenes = 400% (3 + duplicado de la primera) */
+    animation: slideUp 18s ease-in-out infinite;
+}
+
+.image-slider-inner img {
+    width: 100%;
+    height: calc(100% / 4); /* Cada imagen ocupa 1/4 del contenedor */
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Animación mejorada con transición suave al final */
+@keyframes slideUp {
+    0%, 18% {
+        transform: translateY(0);
+    }
+    23%, 41% {
+        transform: translateY(-25%);
+    }
+    46%, 64% {
+        transform: translateY(-50%);
+    }
+    69%, 87% {
+        transform: translateY(-75%);
+    }
+    92%, 100% {
+        transform: translateY(-75%);
+    }
+}

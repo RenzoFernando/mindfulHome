@@ -54,8 +54,6 @@ class User(Base):
     is_renting = Column(Boolean, default=False)
     monthly_rent = Column(Float, nullable=True)
     rent_mortgage_overlap_months = Column(Integer, default=0)
-
-    # Perfil del hogar
     dependents = Column(Integer, default=0)
 
     analyses = relationship("PropertyAnalysis", back_populates="user")

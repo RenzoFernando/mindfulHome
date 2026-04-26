@@ -1,0 +1,112 @@
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+    width: 100%;
+    align-self: center;
+}
+
+.form_input {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    background: transparent;
+    border: 1px solid var(--gris);
+    color: var(--negro);
+    font-size: 14px;
+    outline: none;
+    border-radius: 0.5rem;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.3s;
+    font-family: "Poppins", sans-serif;
+    align-self: center;
+}
+
+.form_input:hover {
+    border-color: var(--verde);
+}
+
+.form_input:focus {
+    border-color: var(--verde);
+}
+
+.form_label {
+    position: absolute;
+    left: 1rem;
+    top: 0.8rem;
+    padding: 0 0.5rem;
+    color: var(--gris);
+    cursor: text;
+    background-color: var(--blanco);
+    z-index: 2;
+    font-size: 15px;
+    transition: top 200ms ease-in, left 200ms ease-in, font-size 200ms ease-in, color 200ms ease-in;
+}
+
+/* Movimiento de la etiqueta al enfocar o escribir */
+.form_input:focus ~ .form_label,
+.form_input:not(:placeholder-shown) ~ .form_label {
+    top: -0.6rem;
+    font-size: 0.8rem;
+    left: 0.8rem;
+    color: var(--verde);
+    background-color: var(--blanco);
+}
+
+/* Estilo general de los selects dentro de .form_input */
+select.form_input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: transparent;
+    padding-right: 2.5rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.input-group select.form_input {
+    padding: 0.9rem 1rem;
+}
+
+/* Flecha personalizada usando ::after */
+.input-group {
+    position: relative;
+}
+
+.input-group select.form_input::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-right: 2px solid var(--gris);
+    border-bottom: 2px solid var(--gris);
+    transform: translateY(-50%) rotate(45deg);
+    pointer-events: none;
+}
+
+/* Hover y focus del select (igual que input) */
+select.form_input:hover {
+    border-color: var(--verde);
+}
+
+select.form_input:focus {
+    border-color: var(--verde);
+    box-shadow: 0 0 0 3px rgba(76, 185, 121, 0.2);
+}
+
+/* Label flotante para dropdown */
+.input-group select.form_input:focus ~ .form_label,
+.input-group select.form_input:not(:placeholder-shown) ~ .form_label {
+    top: -0.6rem;
+    font-size: 0.8rem;
+    left: 0.8rem;
+    color: var(--verde);
+    background-color: var(--blanco);
+}
+
+/* Ajuste de label flotante para selects dentro de input-group */
+.input-group select.form_input {
+    padding: 0.9rem 1rem;
+    background-color: transparent;
+}

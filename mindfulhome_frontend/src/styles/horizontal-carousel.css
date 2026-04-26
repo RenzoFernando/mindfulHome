@@ -1,0 +1,178 @@
+.horizontal-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 30px;
+    border-radius: 50px;
+    background: var(--grisclaro);
+    overflow: hidden;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 60px);
+    overflow: hidden;
+}
+
+.carousel-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+    flex: 0 0 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Estilos para el contenido de las slides */
+.carousel-slide > * {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+/* Puntos indicadores - con mayor especificidad */
+.carousel-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+}
+
+/* Estilos más específicos para los dots */
+.carousel-dots .carousel-dot {
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    max-width: 8px !important;
+    border-radius: 50% !important;
+    background: var(--gris) !important;
+    border: none !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-block;
+    box-shadow: none !important;
+}
+
+.carousel-dots .carousel-dot:hover {
+    background: var(--negro) !important;
+    transform: scale(1.2);
+}
+
+.carousel-dots .carousel-dot.active {
+    background: var(--negro) !important;
+    width: 10px !important;
+    height: 10px !important;
+    min-width: 10px !important;
+    max-width: 10px !important;
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Quitar estilos por defecto de los botones */
+.carousel-dots .carousel-dot:focus,
+.carousel-dots .carousel-dot:active {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Estado vacío */
+.carousel-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .horizontal-carousel {
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .carousel-arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+    
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .carousel-dot.active {
+        width: 20px;
+    }
+}
+
+/* Estilos para el contenido del carrusel */
+.carousel-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Estilos para la imagen */
+.carousel-image {
+    width: 500px;
+    height: 500px;
+    object-fit: cover;
+}
+
+/* Estilos para el contenedor del texto */
+.carousel-text {
+    text-align: center;
+    color: var(--negro);
+}
+
+.carousel-text h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carousel-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .carousel-text h2 {
+        font-size: 1.2rem;
+    }
+    
+    .carousel-text p {
+        font-size: 0.8rem;
+    }
+}

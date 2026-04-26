@@ -47,7 +47,7 @@ REGLAS:
 - NO recalcules métricas
 - SOLO interpreta lo que ya existe
 - Usa lenguaje simple, entendible para cualquier persona
-- Cada explicación debe ser corta (máx 2 frases)
+- Cada explicación debe ser clara, detallada y completa
 - Usa ejemplos cuando ayuden a entender
 - Devuelve SOLO JSON válido, sin markdown, sin backticks
 - SIEMPRE responde en español

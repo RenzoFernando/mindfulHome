@@ -1,0 +1,357 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { ArrowRight, ArrowLeft, Check, Wallet, Briefcase, CreditCard, Home } from "lucide-react";
+import { updateUserProfile, setUser } from "../features/userSlice";
+import FloatingInput from "../components/FloatingInput";
+import "../styles/complete-profile.css";
+import logo from "../assets/logo.png";
+
+export default function CompleteProfile() {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const user = useSelector(state => state.user.user);
+    const token = useSelector(state => state.user.token);
+
+    const [currentStep, setCurrentStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadUser = async () => {
+            console.log("[DEBUG] Iniciando carga de usuario");
+
+            // Verificar token en localStorage
+            const localToken = localStorage.getItem("token");
+            const currentToken = token || localToken;
+
+            if (!currentToken) {
+                navigate("/auth");
+                return;
+            }
+
+            if (user) {
+                setIsLoading(false);
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:8000/mindfulhome/users/me", {
+                    headers: { Authorization: `Bearer ${currentToken}` }
+                });
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}`);
+                }
+
+                const userData = await response.json();
+
+                if (isMounted) {
+                    dispatch(setUser(userData));
+                    setIsLoading(false);
+                }
+            } catch (err) {
+                console.error("[DEBUG] Error:", err);
+                if (isMounted) {
+                    navigate("/auth");
+                }
+            }
+        };
+
+        loadUser();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const [formData, setFormData] = useState({
+        monthly_income: "",
+        fixed_expenses: "",
+        variable_expenses: "",
+        total_savings: "",
+        emergency_fund: "",
+        monthly_savings_goal: "",
+        income_type: "",
+        income_variability: "",
+        contract_type: "",
+        job_seniority_months: "",
+        monthly_debt_payments: "",
+        total_debt: "",
+        is_renting: false,
+        monthly_rent: "",
+        rent_mortgage_overlap_months: 0,
+        dependents: 0,
+    });
+
+    // Mostrar loading mientras se carga
+    if (isLoading) {
+        return (
+            <div className="complete-profile-container">
+                <div className="complete-profile-card">
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                        Cargando tu información...
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const steps = [
+        {
+            title: "Perfil financiero",
+            icon: Wallet,
+            fields: [
+                { name: "monthly_income", label: "Ingreso mensual (COP)", type: "number", required: true, description: "Tu ingreso total mensual después de impuestos" },
+                { name: "fixed_expenses", label: "Gastos fijos mensuales (COP)", type: "number", required: true, description: "Gastos que no cambian mes a mes" },
+                { name: "variable_expenses", label: "Gastos variables mensuales (COP)", type: "number", required: true, description: "Gastos que varían mes a mes" },
+                { name: "total_savings", label: "Ahorros totales (COP)", type: "number", required: false, description: "Total de tus ahorros" },
+                { name: "emergency_fund", label: "Fondo de emergencia (COP)", type: "number", required: false, description: "Ahorros para emergencias" },
+                { name: "monthly_savings_goal", label: "Meta de ahorro mensual (COP)", type: "number", required: false, description: "Cuánto quieres ahorrar cada mes" },
+            ]
+        },
+        {
+            title: "Perfil laboral",
+            icon: Briefcase,
+            fields: [
+                {
+                    name: "income_type", label: "Tipo de ingreso", type: "select", required: true, description: "Cómo recibes tus ingresos", options: [
+                        { value: "EMPLEADO", label: "Empleado" },
+                        { value: "INDEPENDIENTE", label: "Independiente" },
+                        { value: "EMPRESARIO", label: "Empresario" },
+                        { value: "PENSIONADO", label: "Pensionado" }
+                    ]
+                },
+                {
+                    name: "income_variability", label: "Variabilidad del ingreso", type: "select", required: true, description: "Qué tan predecibles son tus ingresos", options: [
+                        { value: "FIJO", label: "Fijo" },
+                        { value: "VARIABLE", label: "Variable" },
+                        { value: "MIXTO", label: "Mixto" }
+                    ]
+                },
+                {
+                    name: "contract_type", label: "Tipo de contrato", type: "select", required: true, description: "Tu situación contractual", options: [
+                        { value: "INDEFINIDO", label: "Indefinido" },
+                        { value: "FIJO", label: "Fijo" },
+                        { value: "PRESTACION_SERVICIOS", label: "Prestación de servicios" },
+                        { value: "NINGUNO", label: "Ninguno" }
+                    ]
+                },
+                { name: "job_seniority_months", label: "Antigüedad laboral (meses)", type: "number", required: true, description: "Tiempo en tu trabajo actual" },
+            ]
+        },
+        {
+            title: "Perfil de deudas",
+            icon: CreditCard,
+            fields: [
+                { name: "monthly_debt_payments", label: "Pagos mensuales de deudas (COP)", type: "number", required: true, description: "Total que pagas cada mes en deudas" },
+                { name: "total_debt", label: "Deuda total (COP)", type: "number", required: true, description: "Monto total de tus deudas" },
+            ]
+        },
+        {
+            title: "Perfil de vivienda",
+            icon: Home,
+            fields: [
+                { name: "is_renting", label: "¿Vives en arriendo?", type: "checkbox", required: false, description: "Si pagas arriendo actualmente" },
+                { name: "monthly_rent", label: "Arriendo mensual (COP)", type: "number", required: false, description: "Monto de tu arriendo" },
+                { name: "rent_mortgage_overlap_months", label: "Meses de superposición", type: "number", required: false, description: "Meses que pagarías renta e hipoteca" },
+                { name: "dependents", label: "Número de dependientes", type: "number", required: true, description: "Personas que dependen de ti" },
+            ]
+        }
+    ];
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const currentToken = localStorage.getItem("token");
+
+            const updateData = {
+                financial: {
+                    monthly_income: parseFloat(formData.monthly_income) || 0,
+                    fixed_expenses: parseFloat(formData.fixed_expenses) || 0,
+                    variable_expenses: parseFloat(formData.variable_expenses) || 0,
+                    total_savings: parseFloat(formData.total_savings) || 0,
+                    emergency_fund: parseFloat(formData.emergency_fund) || 0,
+                    monthly_savings_goal: parseFloat(formData.monthly_savings_goal) || 0,
+                },
+                labor: {
+                    income_type: formData.income_type,
+                    income_variability: formData.income_variability,
+                    contract_type: formData.contract_type,
+                    job_seniority_months: parseInt(formData.job_seniority_months) || 0,
+                },
+                debt: {
+                    monthly_debt_payments: parseFloat(formData.monthly_debt_payments) || 0,
+                    total_debt: parseFloat(formData.total_debt) || 0,
+                },
+                housing: {
+                    is_renting: formData.is_renting,
+                    monthly_rent: parseFloat(formData.monthly_rent) || 0,
+                    rent_mortgage_overlap_months: parseInt(formData.rent_mortgage_overlap_months) || 0,
+                },
+                household: { dependents: parseInt(formData.dependents) || 0 }
+            };
+
+            const response = await fetch("http://localhost:8000/mindfulhome/users/me", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentToken}` },
+                body: JSON.stringify(updateData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}`);
+            }
+
+            const updatedUser = await response.json();
+
+            dispatch(updateUserProfile(updatedUser));
+            navigate("/home");
+        } catch (err) {
+            console.error("[DEBUG] Error:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleNext = () => {
+        if (currentStep < steps.length - 1) {
+            setCurrentStep(currentStep + 1);
+            setError("");
+        } else {
+            handleSubmit();
+        }
+    };
+
+    const handleBack = () => {
+        if (currentStep > 0) {
+            setCurrentStep(currentStep - 1);
+            setError("");
+        }
+    };
+
+    const isLastStep = currentStep === steps.length - 1;
+    const fields = steps[currentStep].fields;
+    const useTwoColumns = fields.length >= 4 || fields.length === 2;
+    const midPoint = Math.ceil(fields.length / 2);
+    const leftFields = fields.slice(0, midPoint);
+    const rightFields = fields.slice(midPoint);
+
+    return (
+        <div className="complete-profile-container">
+            <div className="complete-profile-card">
+                <div className="profile-header">
+                    <img src={logo} alt="Logo" className="profile-logo" width="80" height="80" />
+                    <div className="profile-divider"></div>
+                    <h1>{steps[currentStep].title}</h1>
+                </div>
+
+                <div className="progress-steps">
+                    {steps.map((step, index) => (
+                        <div key={index} className={`progress-step ${index <= currentStep ? 'active' : ''} ${index === currentStep ? 'current' : ''}`}
+                            onClick={() => index < currentStep && setCurrentStep(index)}>
+                            <div className="step-number">{index + 1}</div>
+                            <span className="step-label">{step.title}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <form onSubmit={(e) => e.preventDefault()} className="profile-form">
+                    <div className={`form-fields ${useTwoColumns ? 'two-columns' : ''}`}>
+                        <div className="form-column">
+                            {leftFields.map((field) => (
+                                <div key={field.name} className="form-field">
+                                    {field.type === "select" ? (
+                                        <>
+                                            <select name={field.name} value={formData[field.name]} onChange={handleChange}
+                                                className="floating-select" required={field.required}>
+                                                <option value="">Selecciona {field.label.toLowerCase()}</option>
+                                                {field.options.map(opt => (
+                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                            </select>
+                                            <p className="field-description">{field.description}</p>
+                                        </>
+                                    ) : field.type === "checkbox" ? (
+                                        <>
+                                            <label className="checkbox-label">
+                                                <input type="checkbox" name={field.name} checked={formData[field.name]} onChange={handleChange} />
+                                                {field.label}
+                                            </label>
+                                            <p className="field-description">{field.description}</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FloatingInput type={field.type} name={field.name} label={field.label}
+                                                value={formData[field.name]} onChange={handleChange} required={field.required} />
+                                            <p className="field-description">{field.description}</p>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        {useTwoColumns && rightFields.length > 0 && (
+                            <div className="form-column">
+                                {rightFields.map((field) => (
+                                    <div key={field.name} className="form-field">
+                                        {field.type === "select" ? (
+                                            <>
+                                                <select name={field.name} value={formData[field.name]} onChange={handleChange}
+                                                    className="floating-select" required={field.required}>
+                                                    <option value="">Selecciona {field.label.toLowerCase()}</option>
+                                                    {field.options.map(opt => (
+                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                    ))}
+                                                </select>
+                                                <p className="field-description">{field.description}</p>
+                                            </>
+                                        ) : field.type === "checkbox" ? (
+                                            <>
+                                                <label className="checkbox-label">
+                                                    <input type="checkbox" name={field.name} checked={formData[field.name]} onChange={handleChange} />
+                                                    {field.label}
+                                                </label>
+                                                <p className="field-description">{field.description}</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FloatingInput type={field.type} name={field.name} label={field.label}
+                                                    value={formData[field.name]} onChange={handleChange} required={field.required} />
+                                                <p className="field-description">{field.description}</p>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {error && <div className="error-message">{error}</div>}
+
+                    <div className="navigation-buttons">
+                        {currentStep > 0 && (
+                            <button type="button" onClick={handleBack} className="back-btn">
+                                <ArrowLeft size={20} /> Atrás
+                            </button>
+                        )}
+                        <button type="button" onClick={handleNext} className="next-btn" disabled={loading}>
+                            {loading ? "Guardando..." : (
+                                <>{isLastStep ? "Finalizar" : "Siguiente"} {isLastStep ? <Check size={20} /> : <ArrowRight size={20} />}</>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    );
+}

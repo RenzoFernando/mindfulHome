@@ -1,8 +1,7 @@
 import { apiFetch } from "./api";
-import type { LoginPayload, RegisterPayload, TokenResponse } from "../types/auth";
 
-export async function register(data: RegisterPayload) {
-    const res = await apiFetch<TokenResponse>("/auth/register", {
+export async function register(data) {
+    const res = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
     });
@@ -11,8 +10,8 @@ export async function register(data: RegisterPayload) {
     return res;
 }
 
-export async function login(data: LoginPayload) {
-    const res = await apiFetch<TokenResponse>("/auth/login", {
+export async function login(data) {
+    const res = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
     });

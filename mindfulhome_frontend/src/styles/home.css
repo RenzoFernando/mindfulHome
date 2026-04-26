@@ -1,0 +1,467 @@
+.home-container {
+    display: flex;
+    width: 100%;
+    min-height: calc(100vh - 40px);
+    gap: 20px;
+    padding-right: 20px;
+}
+
+/* Estado vacío - centrado completo */
+.home-container.full-center {
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px);
+}
+
+.empty-state {
+    text-align: center;
+    max-width: 500px;
+    padding: 40px;
+    border-radius: 24px;
+}
+
+.empty-icon {
+    color: #666;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+.empty-state h2 {
+    font-size: 24px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.empty-state p {
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    margin: 0 8px;
+    background-color: var(--verde);
+    color: white;
+    border: none;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(70, 117, 153, 0.3);
+}
+
+/* Lado izquierdo - 60% */
+.home-left {
+    flex: 0 0 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Recuadro superior */
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 16px;
+    border-radius: 40px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.status-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Main problem section */
+
+.top-rectangle {
+    width: 100%;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.001);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: white !important;
+}
+
+/* Grid layout para el top rectangle */
+.top-rectangle-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Primera columna */
+.grid-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Segunda columna */
+.grid-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-end;
+    align-self: flex-end;
+}
+
+/* Estilo del status indicator */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 8px 16px;
+    border-radius: 40px;
+    width: fit-content;
+}
+
+.status-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Main problem text */
+.main-problem-text {
+    flex: 1;
+}
+
+.problem-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.problem-description {
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--negro);
+    margin: 0;
+}
+
+/* Financial score */
+.financial-score {
+    text-align: right;
+}
+
+.score-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.score-value {
+    font-size: 80px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.score-max {
+    font-size: 30px;
+    font-weight: 400;
+    color: #999;
+}
+
+/* Botón de analizar */
+.analyze-button-container {
+    margin-top: 0;
+}
+
+.analyze-property-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--negro);
+    color: var(--blanco);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    width: 30%;
+    justify-content: center;
+}
+
+.analyze-property-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(70, 117, 153, 0.03);
+}
+
+.main-problem-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+.main-problem-text {
+    flex: 1;
+}
+
+/* Contenido adicional del lado izquierdo */
+.left-content {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+}
+
+.section-title {
+    font-size: 20px;
+    color: var(--negro);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* Lado derecho - 30% */
+.home-right {
+    flex: 0 0 30%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+@media (max-width: 768px) {
+    .home-container {
+        flex-direction: column;
+    }
+    
+    .home-left {
+        flex: 0 0 100%;
+    }
+    
+    .home-right {
+        flex: 0 0 100%;
+    }
+    
+    .score-value {
+        font-size: 32px;
+    }
+    
+    .problem-description {
+        font-size: 16px;
+    }
+}
+
+/* Contenedor de problemas secundarios */
+.secondary-problems-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+}
+
+.secondary-problems-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+/* Scroll horizontal sin scrollbar */
+.secondary-problems-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE y Edge */
+    padding-bottom: 4px;
+}
+
+.secondary-problems-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Tarjeta de problema secundario */
+.secondary-problem-card {
+    flex: 0 0 280px;
+    background-color: var(--secu1);
+    border-radius: 20px;
+    padding: 20px;
+    transition: transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.secondary-problem-card::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -60px;
+    width: 500px;
+    height: 300px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 150'%3E%3Cpath fill='none' stroke='rgba(0,0,0,0.06)' stroke-width='6' d='M0 100 Q30 80, 60 100 T120 90 T180 110'/%3E%3Cpath fill='none' stroke='rgba(0,0,0,0.04)' stroke-width='4' d='M0 120 Q40 100, 80 120 T160 110 T200 130'/%3E%3Cpath fill='none' stroke='rgba(0,0,0,0.03)' stroke-width='5' d='M0 140 Q50 120, 100 140 T180 130 T200 140'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: contain;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.secondary-problem-card:hover::before {
+    transform: translate(-5px, -5px);
+    transition: transform 0.3s ease;
+}
+
+/* Header de la tarjeta */
+.secondary-problem-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* Círculo con ícono */
+.problem-icon-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #77BABA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.problem-icon-circle svg {
+    width: 20px;
+    height: 20px;
+    color: var(--negro);
+    stroke-width: 2.7;
+}
+
+/* Número del problema */
+.problem-number {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--verde);
+    margin: 0;
+}
+
+/* Descripción del problema */
+.problem-description-text {
+    font-size: 16px;
+    color: var(--negro);
+        font-weight: 500;
+    margin: 0;
+    margin-top: -10px;
+}
+.metrics-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.metrics-grid-container .metrics-card {
+    margin-bottom: 0;
+}
+
+@media (max-width: 1024px) {
+    .metrics-grid-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* Tarjeta de liquidez */
+.liquidity-card {
+    flex: 0 0 280px;
+    background-color: white;
+    border-radius: 20px;
+    padding: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Círculo con ícono para liquidez */
+.liquidity-icon-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #e8f5e9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.liquidity-icon-circle svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Título de liquidez */
+.liquidity-title {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--verde);
+    margin: 0;
+}
+
+/* Valor de liquidez */
+.liquidity-value {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--negro);
+    margin: 0;
+    margin-top: -10px;
+}
+
+.liquidity-card::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -60px;
+    width: 500px;
+    height: 300px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 150'%3E%3Cpath fill='none' stroke='rgba(0,0,0,0.03)' stroke-width='6' d='M0 100 Q30 80, 60 100 T120 90 T180 110'/%3E%3Cpath fill='none' stroke='rgba(0,0,0,0.02)' stroke-width='4' d='M0 120 Q40 100, 80 120 T160 110 T200 130'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: contain;
+    pointer-events: none;
+    opacity: 1;
+}
+
+.liquidity-card:hover::before {
+    transform: translate(-5px, -5px);
+    transition: transform 0.3s ease;
+}

@@ -1,12 +1,12 @@
 const API_URL = "http://localhost:8000";
+const API_PREFIX = "/mindfulhome";
 
-export async function apiFetch<T>(
-    endpoint: string,
-    options: RequestInit = {}
-): Promise<T> {
+export async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem("token");
-
-    const res = await fetch(`${API_URL}${endpoint}`, {
+    
+    const url = `${API_URL}${API_PREFIX}${endpoint}`;
+    
+    const res = await fetch(url, {
         ...options,
         headers: {
             "Content-Type": "application/json",

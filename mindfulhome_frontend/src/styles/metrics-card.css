@@ -1,0 +1,72 @@
+.metrics-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.metrics-card:last-child {
+    margin-bottom: 0;
+}
+
+.metrics-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 8px;
+    padding-left: 4px;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 0.5fr);
+}
+
+.metric-item {
+    text-align: left;
+}
+
+.metric-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    margin-bottom: 6px;
+}
+
+.metric-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--negro);
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .metrics-card {
+        padding: 16px;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .metric-value {
+        font-size: 18px;
+    }
+    
+    .metric-label {
+        font-size: 10px;
+    }
+}

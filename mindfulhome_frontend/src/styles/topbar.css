@@ -1,0 +1,80 @@
+.topbar {
+    width: 100%;
+    height: 60px; /* altura del topbar */
+    display: flex;
+    justify-content: space-between; /* separa left y right */
+    align-items: center; /* centra verticalmente */
+    padding: 0 20px; /* espacio a los lados */
+    background-color: transparent !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.left, .right {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* espacio entre íconos */
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* espacio entre imagen y texto */
+}
+
+.logo img {
+    width: 35px;
+    height: 35px;
+}
+
+.logo h1{
+    margin: 0 !important;
+    font-size: 25px !important;
+    letter-spacing: 0.03em !important;
+    font-weight: 600 !important;
+    color: var(--blanco) !important;
+}
+
+.perfil-trigger {
+    background-color: transparent; /* fondo del trigger */
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.perfil-trigger:hover,
+.perfil-trigger:focus,
+.perfil-trigger:active {
+    border: none;
+}
+
+.perfil-menu {
+    margin-top: 12px;
+    background-color: var(--negro) !important;    /* fondo del menú */
+    border-radius: 0.5rem;             /* bordes redondeados */
+    padding: 1rem;                   /* espacio interno */
+    min-width: 10rem;                  /* ancho mínimo */
+    border: var(--gris) 1px solid !important;
+}
+
+.perfil-label {
+    color: var(--blanco) !important;
+    font-weight: bolder !important;
+    margin-bottom: 0.7rem !important;
+    font-size: 0.8rem !important;
+}
+
+.perfil-item {
+    color: var(--blanco);
+    padding: 0.2rem 0.8rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+    font-size: 1rem !important;
+}
+
+.perfil-item:hover {
+    color: var(--gris);
+}

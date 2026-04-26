@@ -1,0 +1,44 @@
+.ratios-section {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.ratios-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--negro);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.ratios-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ratio-item {
+    width: 100%;
+}
+
+.ratio-description {
+    font-size: 10px;
+    color: #999;
+    margin-top: -10px;
+    margin-bottom: 0;
+    padding-left: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ratios-section {
+        padding: 16px;
+    }
+    
+    .ratios-title {
+        font-size: 14px;
+    }
+}

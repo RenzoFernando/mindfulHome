@@ -1,0 +1,142 @@
+/* styles/sidebar.css */
+.sidebar {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    bottom: 20px;
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+/* Rectángulo superior */
+.sidebar-top {
+    background-color: var(--blanco);
+    border-radius: 30px;
+    padding: 30px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+}
+
+/* Logo */
+.logo-container {
+    margin-bottom: -10px;
+}
+
+.sidebar-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+/* Contenedor de íconos superiores */
+.nav-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    padding: 0 20px;
+}
+
+/* Rectángulo inferior */
+.sidebar-bottom {
+    background-color: var(--blanco);
+    border-radius: 30px;
+    padding: 30px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+}
+
+/* Contenedor de íconos inferiores */
+.nav-icons-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    padding: 0 20px;
+}
+
+/* Estilos de los íconos */
+.sidebar-icon {
+    width: 24px;
+    height: 24px;
+    color: #696969;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-icon:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+
+/* Tooltip opcional para los íconos */
+.sidebar-icon {
+    position: relative;
+}
+
+.sidebar-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--negro);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    pointer-events: none;
+}
+
+/* Ajuste para la página principal */
+.main-content {
+    margin-left: 120px;
+    padding: 20px;
+    min-height: 100vh;
+    width: calc(100% - 120px);
+    min-width: calc(100% - 120px);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .sidebar {
+        left: 10px;
+        top: 10px;
+        bottom: 10px;
+        width: 60px;
+    }
+    
+    .sidebar-top, .sidebar-bottom {
+        border-radius: 16px;
+    }
+    
+    .sidebar-logo {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .sidebar-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .nav-icons, .nav-icons-bottom {
+        gap: 20px;
+        padding: 0 15px;
+    }
+    
+    .logo-container {
+        padding: 0 15px;
+        padding-bottom: 15px;
+    }
+}

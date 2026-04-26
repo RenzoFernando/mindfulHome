@@ -1,0 +1,64 @@
+.donut-chart-container {
+    border-radius: 20px;
+}
+
+.chart-title {
+    color: var(--negro);
+    padding-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 8px;
+    padding-left: 4px;
+}
+
+.chart-tooltip {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tooltip-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.tooltip-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--negro);
+}
+
+.chart-center-label {
+    font-size: 20px;
+    font-weight: 700;
+    fill: var(--negro);
+    dominant-baseline: middle;
+    text-anchor: middle;
+    
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .donut-chart-container {
+        padding: 16px;
+    }
+    
+    .chart-center-label {
+        font-size: 14px;
+    }
+}
+
+.recharts-legend-item-text {
+    font-size: 12px !important;
+    font-weight: 400;
+}
+
+.recharts-legend-item {
+    padding: 0 4px !important;
+}
