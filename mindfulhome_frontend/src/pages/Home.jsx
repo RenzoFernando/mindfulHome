@@ -235,7 +235,7 @@ export default function Home() {
             {
                 name: "Ingresos",
                 value: cashflow.income || 0,
-                color: "#7ADE5D"
+                color: "var(--secu1)"
             },
             {
                 name: "Gastos",
@@ -255,7 +255,7 @@ export default function Home() {
             {
                 name: "Cuota hipoteca",
                 value: mortgage.monthly_payment || 0,
-                color: "#9ed8d8"
+                color: "var(--gtafito)"
             }
         ];
 

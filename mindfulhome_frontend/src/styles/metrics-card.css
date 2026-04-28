@@ -21,11 +21,23 @@
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(4, 0.5fr);
+    grid-template-columns: repeat(4, auto);
+    gap: 20px;
+    justify-content: space-between;
 }
 
 .metric-item {
     text-align: left;
+    white-space: nowrap;
+}
+
+.metric-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--negro);
+    line-height: 1.2;
+    white-space: normal;
+    word-break: keep-all;
 }
 
 .metric-label {
@@ -34,21 +46,22 @@
     letter-spacing: 0.5px;
     color: #999;
     margin-bottom: 6px;
+    white-space: nowrap;
 }
 
-.metric-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--negro);
-    line-height: 1.2;
-    word-break: break-word;
+@media (max-width: 768px) {
+    .metric-label {
+        white-space: normal;
+        font-size: 10px;
+    }
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
     .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        grid-template-columns: repeat(2, auto);
+        gap: 20px;
+        justify-content: start;
     }
 }
 
@@ -63,10 +76,11 @@
     }
     
     .metric-value {
-        font-size: 18px;
+        font-size: 16px;
     }
     
     .metric-label {
         font-size: 10px;
+        white-space: normal;
     }
 }

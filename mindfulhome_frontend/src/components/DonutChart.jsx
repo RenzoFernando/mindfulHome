@@ -20,7 +20,7 @@ const DonutChart = ({ data, title, centerLabel }) => {
             return (
                 <text
                     x="50%"
-                    y="42%"
+                    y="45%"
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="chart-center-label"
@@ -52,7 +52,7 @@ const DonutChart = ({ data, title, centerLabel }) => {
                         {data.map((entry, index) => (
                             <Cell 
                                 key={`cell-${index}`} 
-                                fill={entry.color}  // Usa el color de cada entry
+                                fill={entry.color}
                                 stroke="white"
                                 strokeWidth={0}
                             />
