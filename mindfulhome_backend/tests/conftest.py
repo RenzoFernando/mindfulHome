@@ -1,15 +1,22 @@
+# tests/conftest.py
 """
 Shared pytest fixtures.
 Uses an in-memory SQLite database to avoid needing a real PostgreSQL instance.
 """
 import pytest
+import os
+import sys
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.db.base import Base, get_db
+os.environ["TESTING"] = "True"
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+
+from app.db.base import Base
 from app.main import app
+from app.api import deps
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
@@ -23,24 +30,27 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="function")
 def db():
+    """Fixture que proporciona una sesión de BD para tests"""
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
     try:
         yield session
     finally:
+        session.rollback()  # Rollback cualquier transacción pendiente
         session.close()
         Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture(scope="function")
 def client(db):
+    """Fixture para cliente de pruebas FastAPI"""
     def override_get_db():
         try:
             yield db
         finally:
             pass
 
-    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[deps.get_db] = override_get_db
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
@@ -63,6 +73,7 @@ def registered_user(client):
 
 @pytest.fixture
 def auth_headers(registered_user):
+    """Headers con token de autenticación"""
     return {"Authorization": f"Bearer {registered_user}"}
 
 
