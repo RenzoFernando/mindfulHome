@@ -246,6 +246,7 @@ const Simulations = () => {
                     userData={userData}
                     onSimulationUpdate={handleSimulationUpdate}
                     isLoading={isLoading}
+                    simulationResults={simulationResults}
                 />
             </div>
         </div>

@@ -7,7 +7,14 @@ import SaveScenarioModal from './SaveScenarioModal';
 import { saveScenario } from '../services/simulation.service';
 import SavedScenariosPanel from './SavedScenariosPanel';
 
-const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading }) => {
+const USER_FIELDS = [
+    'monthly_income', 'fixed_expenses', 'variable_expenses', 'total_savings',
+    'emergency_fund', 'monthly_savings_goal', 'income_type', 'income_variability',
+    'contract_type', 'job_seniority_months', 'monthly_debt_payments', 'total_debt',
+    'is_renting', 'monthly_rent', 'rent_mortgage_overlap_months', 'dependents'
+];
+
+const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, simulationResults }) => {
     const [presets, setPresets] = useState([]);
     const [openCards, setOpenCards] = useState({});
     
@@ -32,7 +39,26 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading }
     const [isSaving, setIsSaving] = useState(false);
 
     const [isScenariosPanelOpen, setIsScenariosPanelOpen] = useState(false);
-const [isLoadingScenario, setIsLoadingScenario] = useState(false);
+    const [isLoadingScenario, setIsLoadingScenario] = useState(false);
+
+    const buildUserOverrides = useCallback((source = {}) => {
+        return USER_FIELDS.reduce((acc, field) => {
+            if (source[field] !== undefined && source[field] !== null) {
+                acc[field] = source[field];
+            }
+            return acc;
+        }, {});
+    }, []);
+
+    const buildPropertyInput = useCallback((source = {}) => {
+        return {
+            property_price: Number(source.property_price ?? 300000000),
+            down_payment: Number(source.down_payment ?? 60000000),
+            annual_interest_rate: Number(source.annual_interest_rate ?? 12.0),
+            interest_rate_type: String(source.interest_rate_type || "FIJA"),
+            loan_term_years: Number(source.loan_term_years ?? 20)
+        };
+    }, []);
 
     // Cargar presets y datos iniciales
     useEffect(() => {
@@ -86,6 +112,9 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
 
         setIsLoading(true);
         try {
+            const finalUserData = { ...currentUserData, ...pendingUserModifications };
+            const finalPropertyData = { ...currentPropertyData, ...pendingPropertyModifications };
+
             // Convertir modificaciones al formato esperado por el backend
             const userModificationsList = Object.entries(pendingUserModifications).map(([variable, value]) => ({
                 variable,
@@ -103,31 +132,19 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
             const updatedScenario = await applyPlaygroundModifications(
                 userModificationsList,
                 propertyModificationsList,
-                null
+                buildPropertyInput(finalPropertyData)
             );
 
             // ACTUALIZAR EL HISTORIAL DE MODIFICACIONES APLICADAS
-            const newAppliedModifications = { ...appliedModifications };
-            
-            // Registrar modificaciones de usuario
-            Object.entries(pendingUserModifications).forEach(([variable, value]) => {
-                newAppliedModifications[variable] = value;
-            });
-            
-            // Registrar modificaciones de propiedad
-            Object.entries(pendingPropertyModifications).forEach(([variable, value]) => {
-                newAppliedModifications[variable] = value;
-            });
+            const updatedUserData = updatedScenario.user_data || finalUserData;
+            const updatedPropertyData = updatedScenario.property_input || buildPropertyInput(finalPropertyData);
+            const newAppliedModifications = buildUserOverrides(updatedUserData);
             
             setAppliedModifications(newAppliedModifications);
 
             // Actualizar SOLO el estado actual (NO el base)
-            if (updatedScenario.user_data) {
-                setCurrentUserData(updatedScenario.user_data);
-            }
-            if (updatedScenario.property_input) {
-                setCurrentPropertyData(updatedScenario.property_input);
-            }
+            setCurrentUserData(updatedUserData);
+            setCurrentPropertyData(updatedPropertyData);
 
             // Limpiar modificaciones pendientes
             setPendingUserModifications({});
@@ -136,17 +153,8 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
 
             // Preparar input para simulación
             const simulationInput = {
-                overrides: userModificationsList.reduce((acc, mod) => {
-                    acc[mod.variable] = mod.new_value;
-                    return acc;
-                }, {}),
-                property_input: propertyModificationsList.length > 0 ? {
-                    property_price: propertyModificationsList.find(m => m.variable === 'property_price')?.new_value || currentPropertyData.property_price,
-                    down_payment: propertyModificationsList.find(m => m.variable === 'down_payment')?.new_value || currentPropertyData.down_payment,
-                    annual_interest_rate: propertyModificationsList.find(m => m.variable === 'annual_interest_rate')?.new_value || currentPropertyData.annual_interest_rate,
-                    interest_rate_type: propertyModificationsList.find(m => m.variable === 'interest_rate_type')?.new_value || currentPropertyData.interest_rate_type,
-                    loan_term_years: propertyModificationsList.find(m => m.variable === 'loan_term_years')?.new_value || currentPropertyData.loan_term_years
-                } : null,
+                overrides: buildUserOverrides(updatedUserData),
+                property_input: buildPropertyInput(updatedPropertyData),
                 simulation_months: 360,
                 num_simulations: 100
             };
@@ -162,7 +170,7 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
         } finally {
             setIsLoading(false);
         }
-    }, [hasChanges, pendingUserModifications, pendingPropertyModifications, currentUserData, currentPropertyData, appliedModifications, onSimulationUpdate]);
+    }, [hasChanges, pendingUserModifications, pendingPropertyModifications, currentUserData, currentPropertyData, buildUserOverrides, buildPropertyInput, onSimulationUpdate]);
 
     const toggleCard = (cardId) => {
         setOpenCards(prev => ({ ...prev, [cardId]: !prev[cardId] }));
@@ -187,8 +195,8 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
     setIsLoadingScenario(true);
     try {
         // Preparar las modificaciones del escenario guardado
-        const modifications = scenario.scenario_overrides || {};
-        const propertyInput = scenario.property_input;
+        const modifications = scenario.scenario_overrides || scenario.inputs?.overrides || {};
+        const propertyInput = scenario.property_input || scenario.inputs?.property_input || buildPropertyInput(currentPropertyData);
         
         // Convertir modificaciones al formato esperado
         const userModificationsList = Object.entries(modifications).map(([variable, value]) => ({
@@ -201,35 +209,33 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
         const updatedScenario = await applyPlaygroundModifications(
             userModificationsList,
             [],
-            propertyInput
+            buildPropertyInput(propertyInput)
         );
         
         // Actualizar estados
-        if (updatedScenario.user_data) {
-            setCurrentUserData(updatedScenario.user_data);
-            setBaseUserData(updatedScenario.user_data);
-        }
-        if (updatedScenario.property_input) {
-            setCurrentPropertyData(updatedScenario.property_input);
-            setBasePropertyData(updatedScenario.property_input);
-        }
+        const loadedUserData = updatedScenario.user_data || { ...currentUserData, ...modifications };
+        const loadedPropertyData = updatedScenario.property_input || buildPropertyInput(propertyInput);
+        setCurrentUserData(loadedUserData);
+        setBaseUserData(loadedUserData);
+        setCurrentPropertyData(loadedPropertyData);
+        setBasePropertyData(loadedPropertyData);
         
         // Limpiar modificaciones pendientes
         setPendingUserModifications({});
         setPendingPropertyModifications({});
-        setAppliedModifications({});
+        setAppliedModifications(buildUserOverrides(loadedUserData));
         setHasChanges(false);
         
         // Preparar input para simulación
         const simulationInput = {
-            overrides: modifications,
-            property_input: propertyInput,
+            overrides: buildUserOverrides(loadedUserData),
+            property_input: buildPropertyInput(loadedPropertyData),
             simulation_months: 360,
             num_simulations: 100
         };
         
         // Ejecutar simulación
-        const results = await runSimulation(simulationInput);
+        const results = scenario.results_summary || await runSimulation(simulationInput);
         
         if (onSimulationUpdate) {
             onSimulationUpdate(results);
@@ -248,36 +254,17 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
     const handleSaveScenario = async (name) => {
         setIsSaving(true);
         try {
-            // Usar el historial de modificaciones aplicadas
-            let modificationsToSave = { ...appliedModifications };
-            
-            // También incluir modificaciones pendientes (si no se han aplicado)
-            Object.entries(pendingUserModifications).forEach(([variable, value]) => {
-                if (value !== undefined && value !== null) {
-                    modificationsToSave[variable] = value;
-                }
-            });
-            
-            Object.entries(pendingPropertyModifications).forEach(([variable, value]) => {
-                if (value !== undefined && value !== null) {
-                    modificationsToSave[variable] = value;
-                }
-            });
-            
-            // Obtener valores actuales de la propiedad
-            const propertyInput = {
-                property_price: Number(getCurrentValue('property_price', true, currentPropertyData.property_price)),
-                down_payment: Number(getCurrentValue('down_payment', true, currentPropertyData.down_payment)),
-                annual_interest_rate: Number(getCurrentValue('annual_interest_rate', true, currentPropertyData.annual_interest_rate)),
-                interest_rate_type: String(getCurrentValue('interest_rate_type', true, currentPropertyData.interest_rate_type) || "FIJA"),
-                loan_term_years: Number(getCurrentValue('loan_term_years', true, currentPropertyData.loan_term_years))
-            };
+            const finalUserData = { ...currentUserData, ...appliedModifications, ...pendingUserModifications };
+            const finalPropertyData = { ...currentPropertyData, ...pendingPropertyModifications };
             
             // Crear el escenario para guardar
             const scenarioToSave = {
                 name: String(name),
-                modifications: modificationsToSave,
-                property_input: propertyInput
+                modifications: buildUserOverrides(finalUserData),
+                property_input: buildPropertyInput(finalPropertyData),
+                simulation_months: 360,
+                num_simulations: 100,
+                results_summary: hasChanges ? null : simulationResults || null
             };
             
             console.log('Enviando al backend:', JSON.stringify(scenarioToSave, null, 2));
@@ -285,6 +272,9 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
             const response = await saveScenario(scenarioToSave);
             console.log('Respuesta del backend:', response);
             
+            setAppliedModifications(buildUserOverrides(finalUserData));
+            setCurrentUserData(finalUserData);
+            setCurrentPropertyData(buildPropertyInput(finalPropertyData));
             alert('Escenario guardado exitosamente');
             setIsSaveModalOpen(false);
         } catch (error) {
@@ -448,6 +438,26 @@ const [isLoadingScenario, setIsLoadingScenario] = useState(false);
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 className="playground-title" style={{ marginBottom: 0 }}>¡Experimenta ahora!</h3>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                    <Icon
+                        name="FolderOpen"
+                        size={18}
+                        color="#467599"
+                        backgroundColor="#eef4f8"
+                        padding={10}
+                        borderRadius={12}
+                        onPress={() => setIsScenariosPanelOpen(true)}
+                        disabled={isLoadingState}
+                    />
+                    <Icon
+                        name="Save"
+                        size={18}
+                        color="#467599"
+                        backgroundColor="#eef4f8"
+                        padding={10}
+                        borderRadius={12}
+                        onPress={() => setIsSaveModalOpen(true)}
+                        disabled={isLoadingState}
+                    />
                     <Icon
                         name="Check"
                         size={18}

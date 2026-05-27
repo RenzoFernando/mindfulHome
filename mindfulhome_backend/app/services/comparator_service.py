@@ -11,6 +11,7 @@ from app.simulation.models.comparison import (
 from app.simulation.models.results import SimulationResults
 from app.simulation.models.scenario import ScenarioInput
 from app.models.simulation import SavedScenario
+from app.models.user import User
 
 class ComparatorService:
     """Servicio para comparar escenarios y analizar tradeoffs"""
@@ -67,8 +68,9 @@ class ComparatorService:
             scenario_input = ScenarioInput(
                 user_snapshot_id=saved.user_snapshot_id,
                 overrides=saved.scenario_overrides or {},
-                simulation_months=saved.simulation_config.get('simulation_months', 360),
-                num_simulations=saved.simulation_config.get('num_simulations', 1000)
+                property_input=(saved.simulation_config or {}).get('property_input'),
+                simulation_months=(saved.simulation_config or {}).get('simulation_months', 360),
+                num_simulations=(saved.simulation_config or {}).get('num_simulations', 1000)
             )
             
             # Si ya tiene resultados cacheados, usarlos
@@ -86,7 +88,8 @@ class ComparatorService:
             }
         else:
             # Escenario temporal
-            results = self.scenario_service.run_scenario(temporal_scenario)
+            user = self.db.query(User).filter(User.id == user_id).first() if user_id else None
+            results = self.scenario_service.run_scenario(temporal_scenario, user)
             metadata = {
                 'name': 'Escenario Actual',
                 'type': 'temporal',

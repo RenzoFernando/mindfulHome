@@ -1,5 +1,7 @@
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+import hashlib
+import json
 
 from sqlalchemy.orm import Session
 from app.models.user import User
@@ -19,6 +21,27 @@ from app.simulation.rules.savings_rules import SavingsRulesGenerator
 class ScenarioService:
     def __init__(self, db: Session):
         self.db = db
+        
+    def _jsonable(self, value: Any) -> Any:
+        return json.loads(json.dumps(value, default=str))
+
+    def _property_input_to_json(self, property_input: Any) -> Optional[Dict[str, Any]]:
+        if property_input is None:
+            return None
+        if hasattr(property_input, "model_dump"):
+            return property_input.model_dump(mode="json")
+        if hasattr(property_input, "dict"):
+            return self._jsonable(property_input.dict())
+        return self._jsonable(property_input)
+
+    def _results_to_json(self, results: Any) -> Optional[Dict[str, Any]]:
+        if results is None:
+            return None
+        if hasattr(results, "model_dump"):
+            return results.model_dump(mode="json")
+        if hasattr(results, "dict"):
+            return self._jsonable(results.dict())
+        return self._jsonable(results)
         
     def _generate_rules(self, user_data: dict) -> SimulationRules:
         """Genera reglas personalizadas según perfil"""
@@ -104,7 +127,7 @@ class ScenarioService:
         state.calculate_metrics()
         return state
     
-    def run_scenario(self, scenario_input: ScenarioInput, current_user: User) -> SimulationResults:
+    def run_scenario(self, scenario_input: ScenarioInput, current_user: Optional[User] = None) -> SimulationResults:
         """Orquesta la ejecución completa de un escenario"""
         
         # 1. Obtener snapshot del usuario
@@ -137,19 +160,35 @@ class ScenarioService:
         
         return results
     
-    def save_scenario(self, user: User, name: str, scenario_input: ScenarioInput) -> SavedScenario:
+    def save_scenario(
+        self,
+        user: User,
+        name: str,
+        scenario_input: ScenarioInput,
+        description: Optional[str] = None,
+        results_summary: Optional[Dict[str, Any]] = None
+    ) -> SavedScenario:
         """Guarda un escenario para el usuario"""
         user_snapshot = self._get_or_create_snapshot(scenario_input, user)
+        scenario_for_results = scenario_input.model_copy(update={"user_snapshot_id": user_snapshot.id})
+        final_results = results_summary
+        if final_results is None:
+            final_results = self._results_to_json(self.run_scenario(scenario_for_results, user))
+        else:
+            final_results = self._jsonable(final_results)
         
         saved_scenario = SavedScenario(
             user_id=user.id,
             name=name,
+            description=description,
             user_snapshot_id=user_snapshot.id,
-            scenario_overrides=scenario_input.overrides,
+            scenario_overrides=self._jsonable(scenario_input.overrides or {}),
             simulation_config={
                 'num_simulations': scenario_input.num_simulations,
-                'simulation_months': scenario_input.simulation_months
-            }
+                'simulation_months': scenario_input.simulation_months,
+                'property_input': self._property_input_to_json(scenario_input.property_input)
+            },
+            results_summary=final_results
         )
         
         self.db.add(saved_scenario)
@@ -158,7 +197,7 @@ class ScenarioService:
         
         return saved_scenario
     
-    def _get_or_create_snapshot(self, scenario_input: ScenarioInput, current_user: User) -> UserSnapshot:
+    def _get_or_create_snapshot(self, scenario_input: ScenarioInput, current_user: Optional[User] = None) -> UserSnapshot:
         """Obtiene un snapshot existente o crea uno nuevo con los datos del usuario actual"""
         
         # Si se proporciona un snapshot_id, intentar obtenerlo
@@ -168,6 +207,9 @@ class ScenarioService:
             ).first()
             if snapshot:
                 return snapshot
+        
+        if current_user is None:
+            raise ValueError("No se puede crear snapshot sin usuario autenticado")
         
         # Crear snapshot con los datos del usuario actual
         snapshot = UserSnapshot(
@@ -226,25 +268,23 @@ class ScenarioService:
             'dependents': snapshot.dependents
         }
         
-        merged = {**snapshot_data, **overrides}
+        merged = {**snapshot_data, **(overrides or {})}
         
         return merged
     
     def _cache_results(self, scenario_input: ScenarioInput, results: SimulationResults) -> None:
         """Cachea los resultados de la simulación"""
-        import hashlib
-        import json
         
         cache_key_data = {
             'user_snapshot_id': scenario_input.user_snapshot_id,
             'overrides': scenario_input.overrides,
-            'property_input': scenario_input.property_input.dict() if scenario_input.property_input else None,
+            'property_input': self._property_input_to_json(scenario_input.property_input),
             'simulation_months': scenario_input.simulation_months,
             'num_simulations': scenario_input.num_simulations
         }
         
         # Generar hash
-        key_string = json.dumps(cache_key_data, sort_keys=True)
+        key_string = json.dumps(cache_key_data, sort_keys=True, default=str)
         cache_key = hashlib.md5(key_string.encode()).hexdigest()
         
         # Verificar si ya existe
@@ -254,13 +294,13 @@ class ScenarioService:
         
         if existing:
             # Actualizar existente
-            existing.results = results.dict()
+            existing.results = self._results_to_json(results)
             existing.expires_at = datetime.utcnow()
         else:
             # Crear nuevo cache
             cache = SimulationCache(
                 cache_key=cache_key,
-                results=results.dict(),
+                results=self._results_to_json(results),
                 expires_at=datetime.utcnow()
             )
             self.db.add(cache)
@@ -272,3 +312,43 @@ class ScenarioService:
         return self.db.query(SavedScenario).filter(
             SavedScenario.user_id == user.id
         ).order_by(SavedScenario.created_at.desc()).all()
+
+    def get_scenario(self, user: User, scenario_id: int) -> Optional[SavedScenario]:
+        return self.db.query(SavedScenario).filter(
+            SavedScenario.id == scenario_id,
+            SavedScenario.user_id == user.id
+        ).first()
+
+    def delete_scenario(self, user: User, scenario_id: int) -> bool:
+        scenario = self.get_scenario(user, scenario_id)
+        if not scenario:
+            return False
+        self.db.delete(scenario)
+        self.db.commit()
+        return True
+
+    def update_scenario(self, user: User, scenario_id: int, updates: Dict[str, Any]) -> Optional[SavedScenario]:
+        scenario = self.get_scenario(user, scenario_id)
+        if not scenario:
+            return None
+        if updates.get("name") is not None:
+            scenario.name = updates["name"]
+        if "description" in updates:
+            scenario.description = updates.get("description")
+        if updates.get("modifications") is not None:
+            scenario.scenario_overrides = self._jsonable(updates["modifications"] or {})
+        if updates.get("property_input") is not None or updates.get("simulation_months") is not None or updates.get("num_simulations") is not None:
+            config = scenario.simulation_config or {}
+            if updates.get("property_input") is not None:
+                config["property_input"] = self._property_input_to_json(updates["property_input"])
+            if updates.get("simulation_months") is not None:
+                config["simulation_months"] = updates["simulation_months"]
+            if updates.get("num_simulations") is not None:
+                config["num_simulations"] = updates["num_simulations"]
+            scenario.simulation_config = config
+        if updates.get("results_summary") is not None:
+            scenario.results_summary = self._jsonable(updates["results_summary"])
+        scenario.updated_at = datetime.utcnow()
+        self.db.commit()
+        self.db.refresh(scenario)
+        return scenario

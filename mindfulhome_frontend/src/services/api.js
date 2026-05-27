@@ -17,7 +17,14 @@ export async function apiFetch(endpoint, options = {}) {
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({}));
-        throw new Error(error.detail || "Error en la petición");
+        const message = typeof error.detail === "string" ? error.detail : "Error en la petición";
+        const requestError = new Error(message);
+        requestError.response = { data: error };
+        throw requestError;
+    }
+
+    if (res.status === 204) {
+        return null;
     }
 
     return res.json();

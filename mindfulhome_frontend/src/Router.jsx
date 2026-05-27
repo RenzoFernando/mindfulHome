@@ -65,6 +65,6 @@ const router = createBrowserRouter([
             { path: "simulations", Component: Simulations},
         ],
     },
-], { basename: "/mindfulhome" });
+]);
 
 export default router;

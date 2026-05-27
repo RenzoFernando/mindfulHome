@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.api import deps
 import logging
 from app.models.user import User
 from app.schemas.analysis import PropertyInput
-from app.schemas.simulation import ScenarioCreate, ScenarioResponse, SimulationResponse
+from app.schemas.simulation import ScenarioCreate, ScenarioResponse, ScenarioUpdate, SimulationResponse
 from app.services.scenario_service import ScenarioService
 from app.simulation.models.scenario import ScenarioInput
 from app.simulation.scenarios.playground import PlaygroundManager, PlaygroundModification, PlaygroundState, WhatIfLibrary
@@ -54,11 +54,19 @@ async def save_scenario(
     
     scenario_input = ScenarioInput(
         overrides=scenario.modifications,
-        property_input=scenario.property_input
+        property_input=scenario.property_input,
+        simulation_months=scenario.simulation_months,
+        num_simulations=scenario.num_simulations
     )
     
-    saved = service.save_scenario(current_user, scenario.name, scenario_input)
-    return ScenarioResponse.from_orm(saved)
+    saved = service.save_scenario(
+        current_user,
+        scenario.name,
+        scenario_input,
+        scenario.description,
+        scenario.results_summary
+    )
+    return ScenarioResponse.model_validate(saved)
 
 @router.post("/playground/apply", response_model=PlaygroundState)
 async def apply_playground_modifications(
@@ -158,4 +166,45 @@ async def get_user_scenarios(
     """Obtiene todos los escenarios guardados del usuario"""
     service = ScenarioService(db)
     scenarios = service.get_user_scenarios(current_user)
-    return [ScenarioResponse.from_orm(s) for s in scenarios]
+    return [ScenarioResponse.model_validate(s) for s in scenarios]
+
+@router.get("/scenarios/{scenario_id}", response_model=ScenarioResponse)
+async def get_saved_scenario(
+    scenario_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    service = ScenarioService(db)
+    scenario = service.get_scenario(current_user, scenario_id)
+    if not scenario:
+        raise HTTPException(status_code=404, detail="Escenario no encontrado")
+    return ScenarioResponse.model_validate(scenario)
+
+@router.patch("/scenarios/{scenario_id}", response_model=ScenarioResponse)
+async def update_saved_scenario(
+    scenario_id: int,
+    updates: ScenarioUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    service = ScenarioService(db)
+    scenario = service.update_scenario(
+        current_user,
+        scenario_id,
+        updates.model_dump(exclude_unset=True)
+    )
+    if not scenario:
+        raise HTTPException(status_code=404, detail="Escenario no encontrado")
+    return ScenarioResponse.model_validate(scenario)
+
+@router.delete("/scenarios/{scenario_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_saved_scenario(
+    scenario_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    service = ScenarioService(db)
+    deleted = service.delete_scenario(current_user, scenario_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Escenario no encontrado")
+    return None

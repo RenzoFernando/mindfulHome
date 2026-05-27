@@ -37,6 +37,39 @@ class SavedScenario(Base):
     user = relationship("User", back_populates="scenarios")
     user_snapshot = relationship("UserSnapshot", back_populates="scenarios")
 
+    @property
+    def property_input(self):
+        config = self.simulation_config or {}
+        return config.get("property_input")
+
+    @property
+    def inputs(self):
+        snapshot = None
+        if self.user_snapshot:
+            snapshot = {
+                "monthly_income": self.user_snapshot.monthly_income,
+                "fixed_expenses": self.user_snapshot.fixed_expenses,
+                "variable_expenses": self.user_snapshot.variable_expenses,
+                "total_savings": self.user_snapshot.total_savings,
+                "emergency_fund": self.user_snapshot.emergency_fund,
+                "monthly_savings_goal": self.user_snapshot.monthly_savings_goal,
+                "income_type": self.user_snapshot.income_type.value if self.user_snapshot.income_type else None,
+                "income_variability": self.user_snapshot.income_variability.value if self.user_snapshot.income_variability else None,
+                "contract_type": self.user_snapshot.contract_type.value if self.user_snapshot.contract_type else None,
+                "job_seniority_months": self.user_snapshot.job_seniority_months,
+                "monthly_debt_payments": self.user_snapshot.monthly_debt_payments,
+                "total_debt": self.user_snapshot.total_debt,
+                "is_renting": self.user_snapshot.is_renting,
+                "monthly_rent": self.user_snapshot.monthly_rent,
+                "rent_mortgage_overlap_months": self.user_snapshot.rent_mortgage_overlap_months,
+                "dependents": self.user_snapshot.dependents
+            }
+        return {
+            "user": snapshot,
+            "overrides": self.scenario_overrides or {},
+            "property_input": self.property_input
+        }
+
 class UserSnapshot(Base):
     __tablename__ = "user_snapshots"
     
