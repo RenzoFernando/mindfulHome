@@ -1,8 +1,7 @@
+# app/simulation/models/results.py (actualizado)
+
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel
-import numpy as np
-
-from app.models.analysis import RiskStatus
 
 class MetricPercentiles(BaseModel):
     p10: float
@@ -16,29 +15,44 @@ class TimelinePoint(BaseModel):
     liquidity: MetricPercentiles
     stability_probability: float
     housing_ratio: MetricPercentiles
-    risk_distribution: Dict[RiskStatus, float]
+    risk_distribution: Dict[str, float]
 
 class SensitivityAnalysis(BaseModel):
     variable: str
     correlation: float
     impact_score: float
     recommendation: str
+    priority: Optional[str] = "medium"
+    actionable_steps: Optional[List[str]] = []
 
 class SimulationResults(BaseModel):
-    # Resultados agregados
+    # Resultados base
     expected_results: Dict[str, MetricPercentiles]
     best_case_results: Dict[str, float]
     worst_case_results: Dict[str, float]
     
-    # Probabilidades
+    # Narrativas
+    best_case_narrative: Dict[str, Any]
+    expected_case_narrative: Dict[str, Any]
+    worst_case_narrative: Dict[str, Any]
+    
+    # NUEVO: Insights generales
+    general_insights: Dict[str, Any]
+    
+    # Métricas de probabilidad
     stability_probability: float
     liquidity_shortfall_probability: float
     financial_stress_probability: float
     
-    # Timeline
+    # Timeline y eventos
     timeline: List[TimelinePoint]
+    timeline_events: List[Dict[str, Any]]
     
-    # Análisis de sensibilidad
+    # Métricas de estrés y trayectoria
+    stress_metrics: Dict[str, Any]
+    trajectory_analysis: Dict[str, Any]
+    
+    # Análisis de sensibilidad mejorado
     top_sensitive_variables: List[SensitivityAnalysis]
     
     # Metadata

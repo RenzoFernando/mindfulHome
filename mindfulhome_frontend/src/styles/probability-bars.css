@@ -1,0 +1,25 @@
+.probability-bars-container {
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+.probability-bars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .probability-bars-container {
+        padding: 16px;
+    }
+    
+    .probability-bars-title {
+        font-size: 14px;
+    }
+    
+    .probability-bars-list {
+        gap: 12px;
+    }
+}

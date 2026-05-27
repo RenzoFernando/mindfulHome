@@ -1,6 +1,8 @@
+/* styles/progress-bar.css */
 .progress-bar-container {
     margin-bottom: 16px;
     width: 100%;
+    position: relative;
 }
 
 .progress-bar-header {
@@ -16,6 +18,29 @@
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.progress-bar-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    background-color: #e0e0e0;
+    color: #666;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.progress-bar-help-icon:hover {
+    background-color: var(--verde);
+    color: white;
 }
 
 .progress-bar-percentage {
@@ -35,4 +60,78 @@
     height: 100%;
     border-radius: 20px;
     transition: width 0.3s ease;
+}
+
+/* Tooltip - Posicionamiento relativo al ícono */
+.progress-bar-tooltip {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    background-color: #333;
+    color: white;
+    font-size: 11px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 250px;
+    text-align: left;
+    line-height: 1.4;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    animation: tooltipFadeIn 0.2s ease;
+    pointer-events: none;
+}
+
+/* Flecha del tooltip */
+.progress-bar-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    background-color: #333;
+    transform: rotate(45deg);
+}
+
+/* Para el último tooltip, ajustar si es necesario */
+.probability-bars-list .progress-bar-container:last-child .progress-bar-tooltip {
+    top: -65px;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .progress-bar-container {
+        margin-bottom: 12px;
+    }
+    
+    .progress-bar-title {
+        font-size: 11px;
+    }
+    
+    .progress-bar-percentage {
+        font-size: 11px;
+    }
+    
+    .progress-bar-tooltip {
+        font-size: 10px;
+        max-width: 200px;
+        right: -10px;
+        top: -50px;
+    }
+    
+    .probability-bars-list .progress-bar-container:first-child .progress-bar-tooltip,
+    .probability-bars-list .progress-bar-container:last-child .progress-bar-tooltip {
+        top: -50px;
+    }
 }

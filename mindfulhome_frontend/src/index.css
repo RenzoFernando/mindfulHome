@@ -9,7 +9,9 @@
     box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
@@ -55,8 +57,10 @@ html, body, #root {
         color: hsl(var(--foreground));
         font-family: "DM Sans", sans-serif;
 
-        scrollbar-width: none;     /* Firefox */
-        overflow-y: scroll;        /* Importante para que siga funcionando el scroll */
+        scrollbar-width: none;
+        /* Firefox */
+        overflow-y: scroll;
+        /* Importante para que siga funcionando el scroll */
     }
 
     /* Chrome, Safari, Edge */
@@ -74,23 +78,25 @@ html, body, #root {
     --gris: #E0E0D7;
     --grisclaro: #F5F5F2;
     --gtafito: #374151;
-    scrollbar-width: none;     /* Firefox */
+    scrollbar-width: none;
+    /* Firefox */
     overflow-y: scroll;
 }
 
 body {
     font-family: "DM Sans", sans-serif;
     color: var(--negro);
-    background: var(--grisclaro) ;
+    background: var(--grisclaro);
 }
 
 button {
-      font-family: "DM Sans", sans-serif;
-      background: var(--secu1);
+    font-family: "DM Sans", sans-serif;
+    background: var(--secu1);
 }
 
 .iconos {
-    stroke: var(--blanco);       /* usar stroke en vez de color */
+    stroke: var(--blanco);
+    /* usar stroke en vez de color */
     cursor: pointer;
     width: 1.5rem;
     height: 1.5rem;
@@ -99,14 +105,20 @@ button {
 }
 
 .iconos:hover {
-    stroke: var(--gris);         /* cambia el color al hacer hover */
-    transform: scale(1.05);       /* agranda un 10% */
+    stroke: var(--gris);
+    /* cambia el color al hacer hover */
+    transform: scale(1.05);
+    /* agranda un 10% */
 }
 
 .scrollbar-none::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
 }
+
 .scrollbar-none {
-    -ms-overflow-style: none;  /* IE y Edge */
-    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;
+    /* IE y Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }

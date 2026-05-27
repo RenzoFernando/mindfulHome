@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 from app.models.user import User
@@ -20,11 +20,95 @@ class ScenarioService:
     def __init__(self, db: Session):
         self.db = db
         
-    def run_scenario(self, scenario_input: ScenarioInput) -> SimulationResults:
+    def _generate_rules(self, user_data: dict) -> SimulationRules:
+        """Genera reglas personalizadas según perfil"""
+        temp_user = User(**{k: v for k, v in user_data.items() if hasattr(User, k)})
+        
+        return SimulationRules(
+            income=IncomeRulesGenerator.generate_rules(temp_user),
+            expenses=ExpenseRulesGenerator.generate_rules(temp_user),
+            savings=SavingsRulesGenerator.generate_rules(temp_user),
+            debt=DebtRulesGenerator.generate_rules(temp_user)
+    )
+    
+    def _build_initial_state(self, user_data: dict, property_input) -> SimulationState:
+        """Construye el estado inicial del mes 0"""
+        
+        # Obtener valores base
+        monthly_income = float(user_data.get('monthly_income', 0))
+        fixed_expenses = float(user_data.get('fixed_expenses', 0))
+        variable_expenses = float(user_data.get('variable_expenses', 0))
+        monthly_debt_payments = float(user_data.get('monthly_debt_payments', 0))
+        monthly_rent = user_data.get('monthly_rent', 0)
+        rent_overlap_months = int(user_data.get('rent_mortgage_overlap_months', 0))
+        
+        # Inicializar variables
+        housing_cost = 0.0
+        base_mortgage_payment = 0.0
+        base_monthly_rent = float(monthly_rent) if monthly_rent else 0.0
+        has_mortgage = False
+        is_renting = False
+        rent_overlap_remaining = 0
+        
+        if property_input:
+            # Escenario de compra
+            has_mortgage = True
+            try:
+                from app.services.mortgage import calculate_mortgage
+                mortgage_result = calculate_mortgage(property_input)
+                base_mortgage_payment = float(mortgage_result.monthly_payment) if mortgage_result else 0.0
+                print(f"DEBUG: Cuota hipoteca = {base_mortgage_payment:,.0f}")
+            except Exception as e:
+                print(f"Error calculando mortgage: {e}")
+                base_mortgage_payment = 0.0
+            
+            # Verificar si hay período de overlap (renta durante los primeros meses)
+            if monthly_rent and rent_overlap_months > 0:
+                is_renting = True
+                rent_overlap_remaining = rent_overlap_months
+                housing_cost = base_mortgage_payment + base_monthly_rent
+                print(f"DEBUG: Overlap activo - Hipoteca + Renta = {housing_cost:,.0f} durante {rent_overlap_months} meses")
+            else:
+                housing_cost = base_mortgage_payment
+                print(f"DEBUG: Solo hipoteca = {housing_cost:,.0f}")
+        else:
+            # Sin compra: si hay renta, pagar renta
+            if monthly_rent:
+                is_renting = True
+                housing_cost = base_monthly_rent
+                print(f"DEBUG: Solo renta = {housing_cost:,.0f}")
+            else:
+                housing_cost = 0.0
+                print(f"DEBUG: Sin costo de vivienda")
+        
+        print(f"DEBUG _build_initial_state: property_input={property_input is not None}, housing_cost={housing_cost:,.0f}")
+        
+        state = SimulationState(
+            month=0,
+            date=datetime.now().date(),
+            monthly_income=monthly_income,
+            fixed_expenses=fixed_expenses,
+            variable_expenses=variable_expenses,
+            monthly_debt_payments=monthly_debt_payments,
+            housing_cost=housing_cost,
+            total_savings=float(user_data.get('total_savings', 0)),
+            emergency_fund=float(user_data.get('emergency_fund', 0)),
+            # Campos de vivienda
+            is_renting=is_renting,
+            monthly_rent=base_monthly_rent,
+            rent_overlap_months_remaining=rent_overlap_remaining,
+            has_mortgage=has_mortgage,
+            base_mortgage_payment=base_mortgage_payment,
+            base_monthly_rent=base_monthly_rent
+        )
+        state.calculate_metrics()
+        return state
+    
+    def run_scenario(self, scenario_input: ScenarioInput, current_user: User) -> SimulationResults:
         """Orquesta la ejecución completa de un escenario"""
         
         # 1. Obtener snapshot del usuario
-        user_snapshot = self._get_or_create_snapshot(scenario_input)
+        user_snapshot = self._get_or_create_snapshot(scenario_input, current_user)
         
         # 2. Aplicar overrides del escenario
         merged_input = self._merge_overrides(user_snapshot, scenario_input.overrides)
@@ -55,7 +139,7 @@ class ScenarioService:
     
     def save_scenario(self, user: User, name: str, scenario_input: ScenarioInput) -> SavedScenario:
         """Guarda un escenario para el usuario"""
-        user_snapshot = self._get_or_create_snapshot(scenario_input)
+        user_snapshot = self._get_or_create_snapshot(scenario_input, user)
         
         saved_scenario = SavedScenario(
             user_id=user.id,
@@ -74,39 +158,8 @@ class ScenarioService:
         
         return saved_scenario
     
-    def _generate_rules(self, user_data: dict) -> SimulationRules:
-        """Genera reglas personalizadas según perfil"""
-        temp_user = User(**{k: v for k, v in user_data.items() if hasattr(User, k)})
-        
-        return SimulationRules(
-            income=IncomeRulesGenerator.generate_rules(temp_user),
-            expenses=ExpenseRulesGenerator.generate_rules(temp_user),
-            savings=SavingsRulesGenerator.generate_rules(temp_user),
-            debt=DebtRulesGenerator.generate_rules(temp_user)
-    )
-    
-    def _build_initial_state(self, user_data: dict, property_input) -> SimulationState:
-        """Construye el estado inicial del mes 0"""
-        # Calcular housing cost basado en propiedad
-        mortgage_result = calculate_mortgage(property_input) if property_input else None
-        housing_cost = mortgage_result.monthly_payment if mortgage_result else (user_data.get('monthly_rent', 0))
-        
-        state = SimulationState(
-            month=0,
-            date=datetime.now().date(),
-            monthly_income=user_data.get('monthly_income', 0),
-            fixed_expenses=user_data.get('fixed_expenses', 0),
-            variable_expenses=user_data.get('variable_expenses', 0),
-            monthly_debt_payments=user_data.get('monthly_debt_payments', 0),
-            housing_cost=housing_cost,
-            total_savings=user_data.get('total_savings', 0),
-            emergency_fund=user_data.get('emergency_fund', 0)
-        )
-        state.calculate_metrics()
-        return state
-    
-    def _get_or_create_snapshot(self, scenario_input: ScenarioInput) -> UserSnapshot:
-        """Obtiene un snapshot existente o crea uno nuevo"""
+    def _get_or_create_snapshot(self, scenario_input: ScenarioInput, current_user: User) -> UserSnapshot:
+        """Obtiene un snapshot existente o crea uno nuevo con los datos del usuario actual"""
         
         # Si se proporciona un snapshot_id, intentar obtenerlo
         if scenario_input.user_snapshot_id:
@@ -115,27 +168,35 @@ class ScenarioService:
             ).first()
             if snapshot:
                 return snapshot
-            
+        
+        # Crear snapshot con los datos del usuario actual
         snapshot = UserSnapshot(
-            user_id=1,  # TODO: Obtener del usuario actual
+            user_id=current_user.id,  # Usar el ID del usuario autenticado
             created_at=datetime.utcnow(),
-            monthly_income=scenario_input.overrides.get('monthly_income', 0),
-            fixed_expenses=scenario_input.overrides.get('fixed_expenses', 0),
-            variable_expenses=scenario_input.overrides.get('variable_expenses', 0),
-            total_savings=scenario_input.overrides.get('total_savings', 0),
-            emergency_fund=scenario_input.overrides.get('emergency_fund', 0),
-            monthly_savings_goal=scenario_input.overrides.get('monthly_savings_goal', 0),
-            income_type=scenario_input.overrides.get('income_type'),
-            income_variability=scenario_input.overrides.get('income_variability'),
-            contract_type=scenario_input.overrides.get('contract_type'),
-            job_seniority_months=scenario_input.overrides.get('job_seniority_months', 0),
-            monthly_debt_payments=scenario_input.overrides.get('monthly_debt_payments', 0),
-            total_debt=scenario_input.overrides.get('total_debt', 0),
-            is_renting=scenario_input.overrides.get('is_renting', False),
-            monthly_rent=scenario_input.overrides.get('monthly_rent'),
-            rent_mortgage_overlap_months=scenario_input.overrides.get('rent_mortgage_overlap_months', 0),
-            dependents=scenario_input.overrides.get('dependents', 0)
+            # Datos del perfil del usuario
+            monthly_income=float(current_user.monthly_income or 0),
+            fixed_expenses=float(current_user.fixed_expenses or 0),
+            variable_expenses=float(current_user.variable_expenses or 0),
+            total_savings=float(current_user.total_savings or 0),
+            emergency_fund=float(current_user.emergency_fund or 0),
+            monthly_savings_goal=float(current_user.monthly_savings_goal or 0),
+            income_type=current_user.income_type,
+            income_variability=current_user.income_variability,
+            contract_type=current_user.contract_type,
+            job_seniority_months=int(current_user.job_seniority_months or 0),
+            monthly_debt_payments=float(current_user.monthly_debt_payments or 0),
+            total_debt=float(current_user.total_debt or 0),
+            is_renting=bool(current_user.is_renting or False),
+            monthly_rent=float(current_user.monthly_rent or 0) if current_user.monthly_rent else None,
+            rent_mortgage_overlap_months=int(current_user.rent_mortgage_overlap_months or 0),
+            dependents=int(current_user.dependents or 0)
         )
+        
+        # Aplicar overrides del escenario si existen
+        if scenario_input.overrides:
+            for key, value in scenario_input.overrides.items():
+                if hasattr(snapshot, key) and value is not None:
+                    setattr(snapshot, key, value)
         
         self.db.add(snapshot)
         self.db.commit()
@@ -205,3 +266,9 @@ class ScenarioService:
             self.db.add(cache)
         
         self.db.commit()
+        
+    def get_user_scenarios(self, user: User) -> List[SavedScenario]:
+        """Obtiene todos los escenarios guardados del usuario"""
+        return self.db.query(SavedScenario).filter(
+            SavedScenario.user_id == user.id
+        ).order_by(SavedScenario.created_at.desc()).all()

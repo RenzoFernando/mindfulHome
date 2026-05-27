@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import Sidebar from "./components/Sidebar";
 import UpdateProfile from "./pages/UpdateProfile";
+import Simulations from "./pages/Simulations";
 
 // Layout con sidebar (para páginas protegidas)
 function ProtectedLayout() {
@@ -61,7 +62,7 @@ const router = createBrowserRouter([
         children: [
             { path: "home", Component: Home },
             { path: "profile", Component: UpdateProfile },
-            { path: "simulations", Component: () => <div>Simulations</div> },
+            { path: "simulations", Component: Simulations},
         ],
     },
 ], { basename: "/mindfulhome" });

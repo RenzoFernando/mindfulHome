@@ -1,0 +1,113 @@
+.metric-card {
+    border-radius: 20px;
+    padding: 16px 20px;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    transition: all 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Columna izquierda - gráfico/icono */
+.metric-card-left {
+    flex: 0 0 auto;
+    margin-right: 16px;
+}
+
+.metric-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metric-card-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Columna central - título y descripción */
+.metric-card-center {
+    flex: 1;
+    min-width: 150px;
+    padding-right: 20px;
+}
+
+.metric-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--negro);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-card-description {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Columna derecha - valor */
+.metric-card-right {
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.metric-card-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--negro);
+    line-height: 1;
+}
+
+.metric-card-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: #999;
+    margin-left: 4px;
+}
+
+/* Footer - explicación */
+.metric-card-footer {
+    flex: 0 0 100%;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.metric-card-explanation {
+    font-size: 11px;
+    color: #999;
+    line-height: 1.4;
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .metric-card {
+        padding: 12px 16px;
+    }
+    
+    .metric-card-title {
+        font-size: 12px;
+    }
+    
+    .metric-card-description {
+        font-size: 11px;
+    }
+    
+    .metric-card-value {
+        font-size: 22px;
+    }
+    
+    .metric-card-explanation {
+        font-size: 10px;
+    }
+}

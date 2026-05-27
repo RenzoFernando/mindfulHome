@@ -10,7 +10,7 @@ class SimulationResponse(BaseModel):
 
 class ScenarioCreate(BaseModel):
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
     modifications: Dict[str, Any]
     property_input: Optional[Dict[str, Any]]
 

@@ -1,0 +1,341 @@
+/* styles/folder-cards.css - Versión corregida */
+.folder-cards-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.folder-card {
+    position: relative;
+    width: 100%;
+    display: block;
+    border-radius: 18px;
+    overflow: visible;
+    margin-bottom: -20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Contenedor interno - sin máscara que limite la altura */
+.folder-card-inner {
+    position: relative;
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+/* Usar pseudo-elemento para la muesca en lugar de máscara */
+.folder-card-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 16px;
+    background: inherit;
+    border-radius: 0 0 20px 20px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.folder-card:first-child {
+    margin-top: 0;
+}
+
+.folder-card:last-child {
+    margin-bottom: 0;
+}
+
+.folder-card:hover {
+    transform: translateX(4px);
+}
+
+.folder-card:hover .folder-card-inner {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.folder-card.expanded .folder-card-inner {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Header */
+.folder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px 12px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.folder-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.folder-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.folder-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.folder-type-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+}
+
+.folder-diagnostic {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.3;
+}
+
+.folder-header-right {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.folder-score {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1;
+}
+
+.folder-score-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: #999;
+}
+
+/* Contenido */
+.folder-content {
+    transition: all 0.3s ease;
+}
+
+.folder-content-inner {
+    width: 100%;
+}
+
+/* Estado colapsado */
+.folder-card.collapsed .folder-content {
+    padding: 8px 20px 16px 20px;
+}
+
+.folder-collapsed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.folder-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #999;
+}
+
+.preview-text {
+    font-size: 13px;
+    margin: 0;
+}
+
+/* Estado expandido */
+.folder-card.expanded .folder-content {
+    padding: 12px 20px 24px 20px;
+}
+
+.folder-expanded {
+    animation: fadeIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Gráfico de liquidez */
+.liquidity-chart-section {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.chart-header span {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+}
+
+/* Resumen del caso */
+.case-summary {
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.case-summary p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #555;
+    margin: 0;
+}
+
+/* Secciones de riesgos y oportunidades */
+.risks-section,
+.opportunities-section {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: -10px;
+}
+
+.section-subtitle {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.risk-item,
+.opportunity-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 12px;
+    color: #555;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.risk-item:last-child,
+.opportunity-item:last-child {
+    border-bottom: none;
+}
+
+.risk-item span,
+.opportunity-item span {
+    flex: 1;
+}
+
+/* Ajustes para MetricsCard */
+.folder-expanded .metrics-section {
+    border-radius: 12px;
+}
+
+.folder-expanded .metrics-card {
+    background: transparent;
+    box-shadow: none;
+    padding: 8px;
+}
+
+.folder-expanded .metrics-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+}
+
+.folder-expanded .metric-item {
+    text-align: center;
+    flex: 1;
+}
+
+.folder-expanded .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #616161;
+    margin-bottom: 4px;
+}
+
+.folder-expanded .metric-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .folder-header {
+        padding: 12px 16px 10px 16px;
+    }
+    
+    .folder-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .folder-diagnostic {
+        font-size: 13px;
+    }
+    
+    .folder-score {
+        font-size: 28px;
+    }
+    
+    .folder-card.collapsed .folder-content {
+        padding: 6px 16px 12px 16px;
+    }
+    
+    .folder-card.expanded .folder-content {
+        padding: 10px 16px 20px 16px;
+    }
+    
+    .case-summary p {
+        font-size: 12px;
+    }
+    
+    .folder-expanded .metrics-grid {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .folder-expanded .metric-item {
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .folder-expanded .metric-label {
+        margin-bottom: 0;
+    }
+}

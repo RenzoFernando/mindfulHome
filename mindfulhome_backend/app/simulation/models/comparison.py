@@ -50,18 +50,17 @@ class TimelineComparisonPoint(BaseModel):
     housing_ratio_b: float
     confidence_interval_a: Optional[Dict[str, float]] = None
     confidence_interval_b: Optional[Dict[str, float]] = None
-
 class Tradeoff(BaseModel):
-    """Tradeoff identificado entre escenarios"""
     variable: str
     benefit: str
     cost: str
     impact_score: float
     confidence: float
-    
     correlation_a: float
     correlation_b: float
     delta_sensitivity: float
+    recommendation: str
+    explanation: Optional[str] = None
     
     recommendation: str
 

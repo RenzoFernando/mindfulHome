@@ -1,0 +1,306 @@
+.simulations-container {
+    display: flex;
+    width: 100%;
+    height: calc(100vh - 40px);
+    padding-right: 20px;
+    gap: 20px; /* Añadir gap entre left y right */
+}
+
+.simulations-left {
+    flex: 0 0 70%;
+    width: 70%;
+    border-radius: 20px;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    gap: 20px;
+    overflow-y: visible;
+    position: relative;
+    z-index: 1;
+}
+
+.left-inner-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    min-width: 0; 
+}
+
+.left-inner-column::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.right-inner-column {
+    flex: 1; /* Cambiar de 0 0 50% a 1 para que ocupe espacio disponible */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    min-width: 0; /* Permitir que se reduzca si es necesario */
+    /* Asegurar que no se sobreponga */
+    position: relative;
+    z-index: 1;
+}
+
+.right-inner-column::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.simulations-right {
+    flex: 0 0 30%;
+    width: 30%;
+    border-radius: 20px;
+    min-height: calc(100vh - 80px);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: relative;
+    z-index: 2; /* Un poco más alto si es necesario, pero no debería sobreponerse */
+}
+
+.simulations-right::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Ajustar el contenedor del timeline para que no cause desbordamiento */
+.timeline-container {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    overflow-x: auto; /* Permitir scroll horizontal si es necesario */
+}
+
+/* Asegurar que el gráfico sea responsivo */
+.timeline-chart {
+    width: 100%;
+    min-width: 500px; /* Ancho mínimo para el gráfico */
+    height: auto;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .simulations-container {
+        flex-direction: column;
+        height: auto;
+        gap: 20px;
+    }
+    
+    .simulations-left,
+    .simulations-right {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    
+    .simulations-left {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .left-inner-column,
+    .right-inner-column {
+        flex: 0 0 auto;
+        height: auto;
+        max-height: 500px;
+        width: 100%;
+    }
+    
+    .simulations-right {
+        min-height: auto;
+        max-height: 500px;
+    }
+}
+
+.simulations-right::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Empty results state */
+.empty-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+    color: #999;
+    text-align: center;
+    gap: 16px;
+}
+
+.empty-results svg {
+    color: #ccc;
+}
+
+.empty-results p {
+    font-size: 14px;
+}
+
+/* Results container */
+.results-container {
+    animation: fadeIn 0.3s ease;
+}
+
+.results-container h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--negro);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .simulations-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .simulations-left,
+    .simulations-right {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    
+    .simulations-left {
+        flex-direction: column;
+    }
+    
+    .left-inner-column,
+    .right-inner-column {
+        flex: 0 0 100%;
+        height: auto;
+        max-height: 500px;
+    }
+    
+    /* Mantener scrollbars ocultos en responsive */
+    .left-inner-column,
+    .right-inner-column,
+    .simulations-right {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .left-inner-column::-webkit-scrollbar,
+    .right-inner-column::-webkit-scrollbar,
+    .simulations-right::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.metrics-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: -30px;
+}
+
+/* Información adicional de simulación */
+.simulation-info {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 16px;
+    border: 1px solid #f0f0f0;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Ajustes para el contenedor de resultados */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.results-container h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--negro);
+    margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* Asegurar que el timeline se vea bien en el contenedor */
+.right-inner-column .timeline-container {
+    margin-bottom: 0;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 1024px) {
+    .simulation-info {
+        margin-top: 16px;
+        padding: 12px;
+    }
+    
+    .info-row {
+        padding: 6px 0;
+    }
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #467599;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

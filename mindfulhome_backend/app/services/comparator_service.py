@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple, List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from scipy import stats
+from app.services.scenario_narrator import LLMScenarioNarrator
 from app.services.scenario_service import ScenarioService
 from app.simulation.engine.aggregator import SimulationAggregator
 from app.simulation.models.comparison import (
@@ -17,48 +18,39 @@ class ComparatorService:
     def __init__(self, db: Session):
         self.db = db
         self.scenario_service = ScenarioService(db)
+        self.narrator = LLMScenarioNarrator()
         
-    async def compare_scenarios(
-        self,
-        scenario_a: Optional[int],
-        scenario_b: Optional[int],
-        temporal_scenario: Optional[ScenarioInput] = None,
-        user_id: Optional[int] = None
-    ) -> ComparisonResponse:
+    async def compare_scenarios(self, scenario_a: Optional[int], scenario_b: Optional[int], temporal_scenario: Optional[ScenarioInput] = None, user_id: Optional[int] = None) -> ComparisonResponse:
         """
         Compara dos escenarios (guardados o temporal vs guardado)
-        
-        Args:
-            scenario_a: ID del primer escenario (puede ser None si es temporal)
-            scenario_b: ID del segundo escenario (puede ser None si es temporal)
-            temporal_scenario: Escenario temporal para comparar
-            user_id: ID del usuario (requerido para escenarios guardados)
         """
-        # Cargar o ejecutar escenarios
-        results_a, metadata_a = await self._get_scenario_results(
-            scenario_a, temporal_scenario if not scenario_a else None, user_id
-        )
-        results_b, metadata_b = await self._get_scenario_results(
-            scenario_b, temporal_scenario if not scenario_b else None, user_id
-        )
+        results_a, metadata_a = await self._get_scenario_results(scenario_a, temporal_scenario if not scenario_a else None, user_id)
+        results_b, metadata_b = await self._get_scenario_results(scenario_b, temporal_scenario if not scenario_b else None, user_id)
         
-        # Calcular comparación
-        comparison = self._calculate_comparison(
-            results_a, results_b, metadata_a, metadata_b
-        )
+        # Almacenar nombres para usar en _identify_tradeoffs
+        self._current_scenario_a_name = metadata_a.get('name', 'Escenario A')
+        self._current_scenario_b_name = metadata_b.get('name', 'Escenario B')
         
-        # Construir timeline comparativo
+        comparison = self._calculate_comparison(results_a, results_b, metadata_a, metadata_b)
         timeline = self._build_comparison_timeline(results_a, results_b)
+        tradeoff_analysis = self._analyze_tradeoffs(results_a, results_b, metadata_a, metadata_b)
         
-        # Analizar tradeoffs
-        tradeoff_analysis = self._analyze_tradeoffs(
-            results_a, results_b, metadata_a, metadata_b
+        comparison_metrics = comparison.metrics_comparison
+        tradeoffs = comparison.tradeoffs
+        
+        comparison_narrative = self.narrator.generate_comparison_narrative(
+            scenario_a_name=metadata_a.get('name', 'Escenario A'),
+            scenario_b_name=metadata_b.get('name', 'Escenario B'),
+            comparison_metrics=comparison_metrics,
+            tradeoffs=[t.dict() for t in tradeoffs],
+            sensitivity_changes=tradeoff_analysis.get('sensitivity_changes', [])
         )
         
         return ComparisonResponse(
             comparison=comparison,
             timeline=timeline,
-            tradeoff_analysis=tradeoff_analysis
+            tradeoff_analysis=tradeoff_analysis,
+            comparison_narrative=comparison_narrative
         )
     
     async def _get_scenario_results(self, scenario_id: Optional[int], temporal_scenario: Optional[ScenarioInput], user_id: Optional[int]) -> Tuple[SimulationResults, Dict[str, Any]]:
@@ -181,8 +173,12 @@ class ComparatorService:
         return ratios[:3]
     
     def _identify_tradeoffs(self, results_a: SimulationResults, results_b: SimulationResults) -> List[Tradeoff]:
-        """Identifica tradeoffs entre escenarios"""
+        """Identifica tradeoffs entre escenarios y genera explicaciones individuales con LLM"""
         tradeoffs = []
+        
+        # Obtener nombres de escenarios (puedes pasarlos como parámetros o almacenarlos)
+        scenario_a_name = getattr(self, '_current_scenario_a_name', 'Escenario A')
+        scenario_b_name = getattr(self, '_current_scenario_b_name', 'Escenario B')
         
         # Analizar cada variable sensible
         for var_a in results_a.top_sensitive_variables:
@@ -192,10 +188,8 @@ class ComparatorService:
             )
             
             if var_b:
-                # Calcular delta de sensibilidad
                 delta_sensitivity = var_b.impact_score - var_a.impact_score
                 
-                # Si hay cambio significativo en sensibilidad
                 if abs(delta_sensitivity) > 0.1:
                     tradeoff = self._analyze_variable_tradeoff(
                         var_a.variable, 
@@ -205,13 +199,21 @@ class ComparatorService:
                         results_b
                     )
                     if tradeoff:
+                        explanation = self.narrator.generate_tradeoff_explanation(
+                            variable=tradeoff.variable,
+                            benefit=tradeoff.benefit,
+                            cost=tradeoff.cost,
+                            impact_score=tradeoff.impact_score,
+                            scenario_a_name=scenario_a_name,
+                            scenario_b_name=scenario_b_name
+                        )
+                        tradeoff.explanation = explanation
                         tradeoffs.append(tradeoff)
         
         # Ordenar por impacto
         tradeoffs.sort(key=lambda x: x.impact_score, reverse=True)
         
-        # Limitar a top 3
-        return tradeoffs[:3]
+        return tradeoffs
     
     def _analyze_variable_tradeoff(self, variable: str, sensitivity_a: float, sensitivity_b: float, results_a: SimulationResults, results_b: SimulationResults) -> Optional[Tradeoff]:
         """Analiza tradeoff específico de una variable"""
