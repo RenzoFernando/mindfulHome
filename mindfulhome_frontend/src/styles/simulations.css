@@ -1,18 +1,18 @@
 .simulations-container {
     display: flex;
     width: 100%;
-    height: calc(100vh - 40px);
-    padding-right: 20px;
-    gap: 20px; /* Añadir gap entre left y right */
+    height: calc(100vh - 32px);
+    padding-right: 12px;
+    gap: 14px;
 }
 
 .simulations-left {
-    flex: 0 0 70%;
-    width: 70%;
-    border-radius: 20px;
-    min-height: calc(100vh - 80px);
+    flex: 0 0 68%;
+    width: 68%;
+    border-radius: 18px;
+    min-height: calc(100vh - 64px);
     display: flex;
-    gap: 20px;
+    gap: 14px;
     overflow-y: visible;
     position: relative;
     z-index: 1;
@@ -22,13 +22,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    height: calc(100vh - 80px);
+    gap: 14px;
+    height: calc(100vh - 64px);
     overflow-y: auto;
-    padding-right: 8px;
+    padding-right: 6px;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    min-width: 0; 
+    min-width: 0;
 }
 
 .left-inner-column::-webkit-scrollbar {
@@ -38,17 +38,16 @@
 }
 
 .right-inner-column {
-    flex: 1; /* Cambiar de 0 0 50% a 1 para que ocupe espacio disponible */
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    height: calc(100vh - 80px);
+    gap: 14px;
+    height: calc(100vh - 64px);
     overflow-y: auto;
-    padding-right: 8px;
+    padding-right: 6px;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    min-width: 0; /* Permitir que se reduzca si es necesario */
-    /* Asegurar que no se sobreponga */
+    min-width: 0;
     position: relative;
     z-index: 1;
 }
@@ -60,15 +59,15 @@
 }
 
 .simulations-right {
-    flex: 0 0 30%;
-    width: 30%;
-    border-radius: 20px;
-    min-height: calc(100vh - 80px);
+    flex: 0 0 32%;
+    width: 32%;
+    border-radius: 18px;
+    min-height: calc(100vh - 64px);
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
     position: relative;
-    z-index: 2; /* Un poco más alto si es necesario, pero no debería sobreponerse */
+    z-index: 2;
 }
 
 .simulations-right::-webkit-scrollbar {
@@ -77,73 +76,31 @@
     height: 0;
 }
 
-/* Ajustar el contenedor del timeline para que no cause desbordamiento */
 .timeline-container {
     background: white;
-    border-radius: 20px;
-    padding: 20px;
+    border-radius: 18px;
+    padding: 14px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     width: 100%;
-    overflow-x: auto; /* Permitir scroll horizontal si es necesario */
+    overflow-x: auto;
 }
 
-/* Asegurar que el gráfico sea responsivo */
 .timeline-chart {
     width: 100%;
-    min-width: 500px; /* Ancho mínimo para el gráfico */
+    min-width: 440px;
     height: auto;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-    .simulations-container {
-        flex-direction: column;
-        height: auto;
-        gap: 20px;
-    }
-    
-    .simulations-left,
-    .simulations-right {
-        flex: 0 0 100%;
-        width: 100%;
-    }
-    
-    .simulations-left {
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .left-inner-column,
-    .right-inner-column {
-        flex: 0 0 auto;
-        height: auto;
-        max-height: 500px;
-        width: 100%;
-    }
-    
-    .simulations-right {
-        min-height: auto;
-        max-height: 500px;
-    }
-}
-
-.simulations-right::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-}
-
-/* Empty results state */
 .empty-results {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    min-height: 400px;
+    min-height: 320px;
     color: #999;
     text-align: center;
-    gap: 16px;
+    gap: 14px;
 }
 
 .empty-results svg {
@@ -151,21 +108,158 @@
 }
 
 .empty-results p {
-    font-size: 14px;
+    font-size: 13px;
 }
 
-/* Results container */
 .results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     animation: fadeIn 0.3s ease;
 }
 
 .results-container h2 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--negro);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
+    margin: 0;
+    padding-bottom: 8px;
     border-bottom: 2px solid #f0f0f0;
+}
+
+.metrics-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: -16px;
+}
+
+.simulations-container .simulation-header {
+    border-radius: 18px;
+    padding: 16px 20px;
+}
+
+.simulations-container .personality-title {
+    font-size: 19px;
+}
+
+.simulations-container .score-number {
+    font-size: 32px;
+}
+
+.simulations-container .score-max {
+    font-size: 16px;
+}
+
+.simulations-container .main-insight {
+    font-size: 14px;
+}
+
+.simulations-container .metric-card {
+    border-radius: 16px;
+    padding: 12px 14px;
+}
+
+.simulations-container .metric-card-left {
+    margin-right: 12px;
+}
+
+.simulations-container .metric-card-title {
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.simulations-container .metric-card-description {
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.simulations-container .metric-card-value {
+    font-size: 24px;
+}
+
+.simulations-container .metric-card-footer {
+    margin-top: 8px;
+    padding-top: 8px;
+}
+
+.simulations-container .folder-cards-container {
+    margin-top: 8px;
+}
+
+.simulations-container .folder-card {
+    margin-bottom: -14px;
+}
+
+.simulations-container .folder-header {
+    padding: 12px 16px 10px 16px;
+}
+
+.simulations-container .folder-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.simulations-container .folder-diagnostic {
+    font-size: 13px;
+}
+
+.simulations-container .folder-score {
+    font-size: 26px;
+}
+
+.simulations-container .folder-card.collapsed .folder-content {
+    padding: 6px 16px 12px 16px;
+}
+
+.simulations-container .folder-card.expanded .folder-content {
+    padding: 10px 16px 18px 16px;
+}
+
+.simulation-info {
+    margin-top: 16px;
+    padding: 14px;
+    background: #f9f9f9;
+    border-radius: 14px;
+    border: 1px solid #f0f0f0;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 12px;
+    color: #333;
+    font-weight: 600;
+}
+
+.right-inner-column .timeline-container {
+    margin-bottom: 0;
+}
+
+.loading-spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #467599;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
 }
 
 @keyframes fadeIn {
@@ -177,11 +271,49 @@
     }
 }
 
-/* Responsive */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 1400px) {
+    .simulations-container {
+        flex-direction: column;
+        height: auto;
+        gap: 16px;
+    }
+    
+    .simulations-left,
+    .simulations-right {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    
+    .simulations-left {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .left-inner-column,
+    .right-inner-column {
+        flex: 0 0 auto;
+        height: auto;
+        max-height: 520px;
+        width: 100%;
+    }
+    
+    .simulations-right {
+        min-height: auto;
+        max-height: 560px;
+    }
+}
+
 @media (max-width: 1024px) {
     .simulations-container {
         flex-direction: column;
         height: auto;
+        padding-right: 0;
     }
     
     .simulations-left,
@@ -201,7 +333,6 @@
         max-height: 500px;
     }
     
-    /* Mantener scrollbars ocultos en responsive */
     .left-inner-column,
     .right-inner-column,
     .simulations-right {
@@ -214,71 +345,7 @@
     .simulations-right::-webkit-scrollbar {
         display: none;
     }
-}
 
-.metrics-cards-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: -30px;
-}
-
-/* Información adicional de simulación */
-.simulation-info {
-    margin-top: 20px;
-    padding: 16px;
-    background: #f9f9f9;
-    border-radius: 16px;
-    border: 1px solid #f0f0f0;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #e8e8e8;
-}
-
-.info-row:last-child {
-    border-bottom: none;
-}
-
-.info-label {
-    font-size: 13px;
-    color: #666;
-    font-weight: 500;
-}
-
-.info-value {
-    font-size: 13px;
-    color: #333;
-    font-weight: 600;
-}
-
-/* Ajustes para el contenedor de resultados */
-.results-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.results-container h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--negro);
-    margin: 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-/* Asegurar que el timeline se vea bien en el contenedor */
-.right-inner-column .timeline-container {
-    margin-bottom: 0;
-}
-
-/* Ajustes responsivos */
-@media (max-width: 1024px) {
     .simulation-info {
         margin-top: 16px;
         padding: 12px;
@@ -286,21 +353,5 @@
     
     .info-row {
         padding: 6px 0;
-    }
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #f0f0f0;
-    border-top-color: #467599;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 16px;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
     }
 }

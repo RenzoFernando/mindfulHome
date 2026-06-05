@@ -78,7 +78,7 @@ const MetricCard = ({
             
             <div className="metric-card-right">
                 <div className="metric-card-value">
-                    {typeof value === 'number' ? value.toLocaleString() : value}
+                    {typeof value === 'number' ? value.toLocaleString("es-CO") : value}
                     {unit && <span className="metric-card-unit">{unit}</span>}
                 </div>
             </div>

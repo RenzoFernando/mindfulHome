@@ -39,7 +39,7 @@ const FolderCards = ({ bestCase, expectedCase, worstCase, timelineData = [] }) =
                 return `${Math.round(value)}%`;
             default:
                 return metric.unit === 'COP' 
-                    ? `$${Math.round(value).toLocaleString()}`
+                    ? `$${Math.round(value).toLocaleString("es-CO")}`
                     : `${Math.round(value)}${metric.unit === '%' ? '%' : ''}`;
         }
     };

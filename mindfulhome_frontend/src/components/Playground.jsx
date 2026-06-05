@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronDown, ChevronUp, Briefcase, ShoppingBag, Shield, CreditCard, Home, Check, AlertTriangle } from "lucide-react";
 import { applyPlaygroundModifications, getWhatIfPresets, runSimulation } from "../services/simulation.service";
 import "../styles/playground.css";
@@ -13,6 +13,11 @@ const USER_FIELDS = [
     'contract_type', 'job_seniority_months', 'monthly_debt_payments', 'total_debt',
     'is_renting', 'monthly_rent', 'rent_mortgage_overlap_months', 'dependents'
 ];
+
+const formatCurrency = (value) => {
+    const numericValue = Number(value || 0);
+    return `$${new Intl.NumberFormat("es-CO").format(numericValue)}`;
+};
 
 const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, simulationResults }) => {
     const [presets, setPresets] = useState([]);
@@ -34,6 +39,8 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
     const [appliedModifications, setAppliedModifications] = useState({});
     
     const [isLoading, setIsLoading] = useState(false);
+    const [notification, setNotification] = useState(null);
+    const notificationTimeoutRef = useRef(null);
     const [hasChanges, setHasChanges] = useState(false);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -191,64 +198,72 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
         }
     };
 
+    const showNotification = useCallback((message, type = "success") => {
+        setNotification({ message, type });
+        window.clearTimeout(notificationTimeoutRef.current);
+        notificationTimeoutRef.current = window.setTimeout(() => {
+            setNotification(null);
+        }, 3200);
+    }, []);
+
     const loadSavedScenario = async (scenario) => {
-    setIsLoadingScenario(true);
-    try {
-        // Preparar las modificaciones del escenario guardado
-        const modifications = scenario.scenario_overrides || scenario.inputs?.overrides || {};
-        const propertyInput = scenario.property_input || scenario.inputs?.property_input || buildPropertyInput(currentPropertyData);
-        
-        // Convertir modificaciones al formato esperado
-        const userModificationsList = Object.entries(modifications).map(([variable, value]) => ({
-            variable,
-            new_value: value,
-            percentage_change: null
-        }));
-        
-        // Enviar al backend para aplicar el escenario
-        const updatedScenario = await applyPlaygroundModifications(
-            userModificationsList,
-            [],
-            buildPropertyInput(propertyInput)
-        );
-        
-        // Actualizar estados
-        const loadedUserData = updatedScenario.user_data || { ...currentUserData, ...modifications };
-        const loadedPropertyData = updatedScenario.property_input || buildPropertyInput(propertyInput);
-        setCurrentUserData(loadedUserData);
-        setBaseUserData(loadedUserData);
-        setCurrentPropertyData(loadedPropertyData);
-        setBasePropertyData(loadedPropertyData);
-        
-        // Limpiar modificaciones pendientes
-        setPendingUserModifications({});
-        setPendingPropertyModifications({});
-        setAppliedModifications(buildUserOverrides(loadedUserData));
-        setHasChanges(false);
-        
-        // Preparar input para simulación
-        const simulationInput = {
-            overrides: buildUserOverrides(loadedUserData),
-            property_input: buildPropertyInput(loadedPropertyData),
-            simulation_months: 360,
-            num_simulations: 100
-        };
-        
-        // Ejecutar simulación
-        const results = scenario.results_summary || await runSimulation(simulationInput);
-        
-        if (onSimulationUpdate) {
-            onSimulationUpdate(results);
+        setIsLoadingScenario(true);
+        try {
+            // Preparar las modificaciones del escenario guardado
+            const modifications = scenario.scenario_overrides || scenario.inputs?.overrides || {};
+            const propertyInput = scenario.property_input || scenario.inputs?.property_input || buildPropertyInput(currentPropertyData);
+            
+            // Convertir modificaciones al formato esperado
+            const userModificationsList = Object.entries(modifications).map(([variable, value]) => ({
+                variable,
+                new_value: value,
+                percentage_change: null
+            }));
+            
+            // Enviar al backend para aplicar el escenario
+            const updatedScenario = await applyPlaygroundModifications(
+                userModificationsList,
+                [],
+                buildPropertyInput(propertyInput)
+            );
+            
+            // Actualizar estados
+            const loadedUserData = updatedScenario.user_data || { ...currentUserData, ...modifications };
+            const loadedPropertyData = updatedScenario.property_input || buildPropertyInput(propertyInput);
+            setCurrentUserData(loadedUserData);
+            setBaseUserData(loadedUserData);
+            setCurrentPropertyData(loadedPropertyData);
+            setBasePropertyData(loadedPropertyData);
+            
+            // Limpiar modificaciones pendientes
+            setPendingUserModifications({});
+            setPendingPropertyModifications({});
+            setAppliedModifications(buildUserOverrides(loadedUserData));
+            setHasChanges(false);
+            
+            // Preparar input para simulación
+            const simulationInput = {
+                overrides: buildUserOverrides(loadedUserData),
+                property_input: buildPropertyInput(loadedPropertyData),
+                simulation_months: 360,
+                num_simulations: 100
+            };
+            
+            // Ejecutar simulación
+            const results = scenario.results_summary || await runSimulation(simulationInput);
+            
+            if (onSimulationUpdate) {
+                onSimulationUpdate(results);
+            }
+            
+            showNotification(`Escenario "${scenario.name}" cargado`);
+        } catch (error) {
+            console.error('Error loading scenario:', error);
+            showNotification('No se pudo cargar el escenario', 'error');
+        } finally {
+            setIsLoadingScenario(false);
         }
-        
-        alert(`Escenario "${scenario.name}" cargado exitosamente`);
-    } catch (error) {
-        console.error('Error loading scenario:', error);
-        alert('Error al cargar el escenario');
-    } finally {
-        setIsLoadingScenario(false);
-    }
-};
+    };
 
     // Función para guardar el escenario actual
     const handleSaveScenario = async (name) => {
@@ -275,19 +290,19 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             setAppliedModifications(buildUserOverrides(finalUserData));
             setCurrentUserData(finalUserData);
             setCurrentPropertyData(buildPropertyInput(finalPropertyData));
-            alert('Escenario guardado exitosamente');
+            showNotification('Escenario guardado correctamente');
             setIsSaveModalOpen(false);
         } catch (error) {
             console.error('Error saving scenario:', error);
             if (error.response?.data) {
                 const errorData = error.response.data;
                 if (typeof errorData === 'object') {
-                    alert('Error: ' + JSON.stringify(errorData, null, 2));
+                    showNotification('Error: ' + JSON.stringify(errorData, null, 2), 'error');
                 } else {
-                    alert('Error: ' + errorData);
+                    showNotification('Error: ' + errorData, 'error');
                 }
             } else {
-                alert('Error al guardar el escenario. Verifica que todos los campos sean válidos.');
+                showNotification('No se pudo guardar el escenario. Verifica los campos.', 'error');
             }
         } finally {
             setIsSaving(false);
@@ -308,7 +323,7 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             title: "Ingresos y trabajo",
             icon: Briefcase,
             variables: [
-                { name: "monthly_income", label: "Ingreso mensual", type: "slider", min: 0, max: 20000000, step: 100000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 4000000 },
+                { name: "monthly_income", label: "Ingreso mensual", type: "slider", min: 0, max: 20000000, step: 100000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 4000000 },
                 { name: "job_seniority_months", label: "Antigüedad laboral", type: "slider", min: 0, max: 240, step: 6, unit: "meses", format: (v) => v ? `${v} meses` : "0 meses", defaultValue: 24 },
                 { name: "income_type", label: "Tipo de ingreso", type: "segmented", options: ["EMPLEADO", "INDEPENDIENTE", "EMPRESARIO", "PENSIONADO"], defaultValue: "EMPLEADO" },
                 { name: "contract_type", label: "Tipo de contrato", type: "segmented", options: ["INDEFINIDO", "FIJO", "PRESTACION_SERVICIOS", "NINGUNO"], defaultValue: "INDEFINIDO" },
@@ -320,9 +335,9 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             title: "Gastos y estilo de vida",
             icon: ShoppingBag,
             variables: [
-                { name: "fixed_expenses", label: "Gastos fijos", type: "slider", min: 0, max: 10000000, step: 50000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 1500000 },
-                { name: "variable_expenses", label: "Gastos variables", type: "slider", min: 0, max: 8000000, step: 50000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 1000000 },
-                { name: "monthly_savings_goal", label: "Meta de ahorro mensual", type: "slider", min: 0, max: 5000000, step: 50000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 500000 },
+                { name: "fixed_expenses", label: "Gastos fijos", type: "slider", min: 0, max: 10000000, step: 50000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 1500000 },
+                { name: "variable_expenses", label: "Gastos variables", type: "slider", min: 0, max: 8000000, step: 50000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 1000000 },
+                { name: "monthly_savings_goal", label: "Meta de ahorro mensual", type: "slider", min: 0, max: 5000000, step: 50000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 500000 },
                 { name: "dependents", label: "Dependientes", type: "stepper", min: 0, max: 10, step: 1, unit: "", format: (v) => v === 1 ? `${v} dependiente` : `${v} dependientes`, defaultValue: 0 }
             ]
         },
@@ -331,8 +346,8 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             title: "Ahorros y protección",
             icon: Shield,
             variables: [
-                { name: "total_savings", label: "Ahorros totales", type: "slider", min: 0, max: 500000000, step: 1000000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 10000000 },
-                { name: "emergency_fund", label: "Fondo de emergencia", type: "slider", min: 0, max: 200000000, step: 1000000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 5000000 }
+                { name: "total_savings", label: "Ahorros totales", type: "slider", min: 0, max: 500000000, step: 1000000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 10000000 },
+                { name: "emergency_fund", label: "Fondo de emergencia", type: "slider", min: 0, max: 200000000, step: 1000000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 5000000 }
             ]
         },
         {
@@ -340,8 +355,8 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             title: "Deudas y presión financiera",
             icon: CreditCard,
             variables: [
-                { name: "total_debt", label: "Deuda total", type: "slider", min: 0, max: 200000000, step: 1000000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 5000000 },
-                { name: "monthly_debt_payments", label: "Pagos mensuales de deuda", type: "slider", min: 0, max: 5000000, step: 50000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 300000 }
+                { name: "total_debt", label: "Deuda total", type: "slider", min: 0, max: 200000000, step: 1000000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 5000000 },
+                { name: "monthly_debt_payments", label: "Pagos mensuales de deuda", type: "slider", min: 0, max: 5000000, step: 50000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 300000 }
             ]
         },
         {
@@ -349,7 +364,7 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             title: "Condiciones de vivienda",
             icon: Home,
             variables: [
-                { name: "monthly_rent", label: "Renta mensual (si aplica)", type: "slider", min: 0, max: 10000000, step: 100000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 0 },
+                { name: "monthly_rent", label: "Renta mensual (si aplica)", type: "slider", min: 0, max: 10000000, step: 100000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 0 },
                 { name: "rent_mortgage_overlap_months", label: "Meses de overlap (renta + hipoteca)", type: "stepper", min: 0, max: 12, step: 1, unit: "meses", format: (v) => `${v} meses`, defaultValue: 0 }
             ]
         },
@@ -358,8 +373,8 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
             title: "Detalles de propiedad",
             icon: Home,
             variables: [
-                { name: "property_price", label: "Precio de la propiedad", type: "slider", min: 0, max: 1000000000, step: 10000000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 300000000 },
-                { name: "down_payment", label: "Pago inicial", type: "slider", min: 0, max: 500000000, step: 5000000, unit: "$", format: (v) => v ? `$${v.toLocaleString()}` : "$0", defaultValue: 60000000 },
+                { name: "property_price", label: "Precio de la propiedad", type: "slider", min: 0, max: 1000000000, step: 10000000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 300000000 },
+                { name: "down_payment", label: "Pago inicial", type: "slider", min: 0, max: 500000000, step: 5000000, unit: "$", format: (v) => formatCurrency(v), defaultValue: 60000000 },
                 { name: "annual_interest_rate", label: "Tasa de interés anual", type: "slider", min: 0, max: 20, step: 0.1, unit: "%", format: (v) => v ? `${v}%` : "0%", defaultValue: 12.0 },
                 { name: "loan_term_years", label: "Plazo del préstamo", type: "slider", min: 5, max: 30, step: 5, unit: "años", format: (v) => v ? `${v} años` : "0 años", defaultValue: 20 },
                 { name: "interest_rate_type", label: "Tipo de tasa", type: "segmented", options: ["FIJA", "VARIABLE"], defaultValue: "FIJA" }
@@ -381,7 +396,7 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
                             min={config.min}
                             max={config.max}
                             step={config.step}
-                            value={value || config.defaultValue || 0}
+                            value={value ?? config.defaultValue ?? 0}
                             onChange={(e) => accumulateModification(variable, parseFloat(e.target.value), config.isProperty || false)}
                             className="playground-slider"
                             disabled={isLoadingState}
@@ -411,16 +426,16 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
                     <div className="playground-stepper">
                         <button
                             className="stepper-btn"
-                            onClick={() => accumulateModification(variable, Math.max(config.min, (value || config.defaultValue || 0) - config.step), config.isProperty || false)}
-                            disabled={isLoadingState || (value || config.defaultValue || 0) <= config.min}
+                            onClick={() => accumulateModification(variable, Math.max(config.min, (value ?? config.defaultValue ?? 0) - config.step), config.isProperty || false)}
+                            disabled={isLoadingState || (value ?? config.defaultValue ?? 0) <= config.min}
                         >
                             -
                         </button>
                         <span className="stepper-value">{config.format ? config.format(value !== undefined ? value : config.defaultValue) : value}</span>
                         <button
                             className="stepper-btn"
-                            onClick={() => accumulateModification(variable, Math.min(config.max, (value || config.defaultValue || 0) + config.step), config.isProperty || false)}
-                            disabled={isLoadingState || (value || config.defaultValue || 0) >= config.max}
+                            onClick={() => accumulateModification(variable, Math.min(config.max, (value ?? config.defaultValue ?? 0) + config.step), config.isProperty || false)}
+                            disabled={isLoadingState || (value ?? config.defaultValue ?? 0) >= config.max}
                         >
                             +
                         </button>
@@ -516,6 +531,13 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
                     );
                 })}
             </div>
+            {notification && (
+                <div className={`playground-notification playground-notification-${notification.type}`}>
+                    <Icon name={notification.type === "error" ? "AlertCircle" : "CheckCircle2"} size={16} color={notification.type === "error" ? "#b42318" : "#1f7a3f"} backgroundColor="transparent" padding={0} />
+                    <span>{notification.message}</span>
+                </div>
+            )}
+
             <SaveScenarioModal
                 isOpen={isSaveModalOpen}
                 onClose={() => setIsSaveModalOpen(false)}
@@ -523,11 +545,12 @@ const Playground = ({ userData, onSimulationUpdate, isLoading: externalLoading, 
                 isLoading={isSaving}
             />
             <SavedScenariosPanel
-    isOpen={isScenariosPanelOpen}
-    onClose={() => setIsScenariosPanelOpen(false)}
-    onLoadScenario={loadSavedScenario}
-    isLoading={isLoadingScenario}
-/>
+                isOpen={isScenariosPanelOpen}
+                onClose={() => setIsScenariosPanelOpen(false)}
+                onLoadScenario={loadSavedScenario}
+                isLoading={isLoadingScenario}
+                onScenarioDeleted={(name) => showNotification(`Escenario "${name}" eliminado`)}
+            />
         </div>
     );
 };

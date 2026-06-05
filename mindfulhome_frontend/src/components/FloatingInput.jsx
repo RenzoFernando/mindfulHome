@@ -1,6 +1,20 @@
 import React, { useState } from "react";
 import "../styles/forms.css";
 
+const CURRENCY_FIELDS = new Set([
+    "monthly_income",
+    "fixed_expenses",
+    "variable_expenses",
+    "total_savings",
+    "emergency_fund",
+    "monthly_savings_goal",
+    "monthly_debt_payments",
+    "total_debt",
+    "monthly_rent",
+    "property_price",
+    "down_payment"
+]);
+
 function FloatingInput({
     type = "text",
     id,
@@ -12,6 +26,18 @@ function FloatingInput({
 }) {
     const [error, setError] = useState("");
     const [touched, setTouched] = useState(false);
+    const isCurrency = type === "number" && CURRENCY_FIELDS.has(name);
+
+    const getRawCurrencyValue = (val) => {
+        if (val === undefined || val === null) return "";
+        return String(val).replace(/\D/g, "");
+    };
+
+    const formatCurrencyValue = (val) => {
+        const raw = getRawCurrencyValue(val);
+        if (raw === "") return "";
+        return new Intl.NumberFormat("es-CO").format(Number(raw));
+    };
 
     const validateAndCorrect = (val) => {
         if (type === "number" && val !== "") {
@@ -26,6 +52,17 @@ function FloatingInput({
     };
 
     const handleChange = (e) => {
+        if (isCurrency) {
+            const rawValue = getRawCurrencyValue(e.target.value);
+            const rawEvent = {
+                ...e,
+                target: { ...e.target, name, value: rawValue }
+            };
+            onChange(rawEvent);
+            setError("");
+            return;
+        }
+
         let newValue = e.target.value;
         
         onChange(e);
@@ -62,16 +99,17 @@ function FloatingInput({
     return (
         <div className="input-group">
             <input
-                type={type}
+                type={isCurrency ? "text" : type}
                 id={id}
                 name={name}
                 className={`form_input ${error ? "error" : ""}`}
                 placeholder=" "
-                value={value}
+                value={isCurrency ? formatCurrencyValue(value) : value}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 required={required}
-                step={type === "number" ? "any" : undefined}
+                step={!isCurrency && type === "number" ? "any" : undefined}
+                inputMode={isCurrency ? "numeric" : type === "number" ? "decimal" : undefined}
             />
             <label htmlFor={id} className="form_label">
                 {label}
