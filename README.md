@@ -98,10 +98,6 @@ npm start
 
 Una vez ejecutados el backend y el frontend, abre la aplicación en el navegador usando la dirección local indicada por el servidor.
 
-## Autor
-
-**Renzo Fernando Mosquera Daza**
-
 ## Licencia
 
 Este proyecto fue desarrollado con fines académicos.
